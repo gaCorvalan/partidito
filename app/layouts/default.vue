@@ -1,6 +1,6 @@
 <template>
     <div
-        class="w-full max-w-xl flex flex-col h-screen bg-background rounded-3xl overflow-hidden shadow-2xl"
+        class="w-full max-w-xl flex flex-col h-screen bg-background rounded-3xl overflow-hidden shadow-2xl mx-auto"
     >
         <div class="flex-1 overflow-y-auto">
             <slot />
