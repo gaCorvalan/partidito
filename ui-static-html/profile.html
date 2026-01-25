@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PlayMatch - Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              background: "oklch(var(--background) / <alpha-value>)",
+              foreground: "oklch(var(--foreground) / <alpha-value>)",
+              card: "oklch(var(--card) / <alpha-value>)",
+              "card-foreground": "oklch(var(--card-foreground) / <alpha-value>)",
+              popover: "oklch(var(--popover) / <alpha-value>)",
+              "popover-foreground": "oklch(var(--popover-foreground) / <alpha-value>)",
+              primary: "oklch(var(--primary) / <alpha-value>)",
+              "primary-foreground": "oklch(var(--primary-foreground) / <alpha-value>)",
+              secondary: "oklch(var(--secondary) / <alpha-value>)",
+              "secondary-foreground": "oklch(var(--secondary-foreground) / <alpha-value>)",
+              muted: "oklch(var(--muted) / <alpha-value>)",
+              "muted-foreground": "oklch(var(--muted-foreground) / <alpha-value>)",
+              accent: "oklch(var(--accent) / <alpha-value>)",
+              "accent-foreground": "oklch(var(--accent-foreground) / <alpha-value>)",
+              destructive: "oklch(var(--destructive) / <alpha-value>)",
+              "destructive-foreground": "oklch(var(--destructive-foreground) / <alpha-value>)",
+              border: "oklch(var(--border) / <alpha-value>)",
+              input: "oklch(var(--input) / <alpha-value>)",
+              ring: "oklch(var(--ring) / <alpha-value>)"
+            },
+            borderRadius: {
+              sm: "calc(var(--radius) - 4px)",
+              md: "calc(var(--radius) - 2px)",
+              lg: "var(--radius)",
+              xl: "calc(var(--radius) + 4px)"
+            },
+            fontFamily: {
+              sans: [
+                "Geist",
+                "Geist Fallback",
+                "ui-sans-serif",
+                "system-ui",
+                "sans-serif"
+              ]
+            }
+          }
+        }
+      };
+    </script>
+    <style>
+      :root {
+        --background: 1 0 0;
+        --foreground: 0.15 0 0;
+        --card: 0.99 0 0;
+        --card-foreground: 0.15 0 0;
+        --popover: 1 0 0;
+        --popover-foreground: 0.15 0 0;
+        --primary: 0.56 0.15 142;
+        --primary-foreground: 1 0 0;
+        --secondary: 0.93 0.01 0;
+        --secondary-foreground: 0.15 0 0;
+        --muted: 0.85 0.01 0;
+        --muted-foreground: 0.55 0.01 0;
+        --accent: 0.56 0.15 142;
+        --accent-foreground: 1 0 0;
+        --destructive: 0.577 0.245 27.325;
+        --destructive-foreground: 1 0 0;
+        --border: 0.93 0 0;
+        --input: 0.96 0 0;
+        --ring: 0.56 0.15 142;
+        --radius: 0.5rem;
+      }
+
+      .dark {
+        --background: 0.145 0 0;
+        --foreground: 0.985 0 0;
+        --card: 0.145 0 0;
+        --card-foreground: 0.985 0 0;
+        --popover: 0.145 0 0;
+        --popover-foreground: 0.985 0 0;
+        --primary: 0.985 0 0;
+        --primary-foreground: 0.205 0 0;
+        --secondary: 0.269 0 0;
+        --secondary-foreground: 0.985 0 0;
+        --muted: 0.269 0 0;
+        --muted-foreground: 0.708 0 0;
+        --accent: 0.269 0 0;
+        --accent-foreground: 0.985 0 0;
+        --destructive: 0.396 0.141 25.723;
+        --destructive-foreground: 0.637 0.237 25.331;
+        --border: 0.269 0 0;
+        --input: 0.269 0 0;
+        --ring: 0.439 0 0;
+      }
+
+      body {
+        background-color: oklch(var(--background));
+        color: oklch(var(--foreground));
+      }
+    </style>
+  </head>
+  <body class="font-sans antialiased">
+    <div class="flex items-center justify-center min-h-screen bg-background p-4">
+      <div class="w-full max-w-sm flex flex-col h-screen md:h-[812px] bg-background rounded-3xl overflow-hidden shadow-2xl">
+        <div class="flex-1 overflow-y-auto">
+          <div class="w-full h-full flex flex-col">
+            <div class="sticky top-0 bg-background border-b border-border p-4 flex items-center justify-between">
+              <h1 class="text-2xl font-bold">Profile</h1>
+              <button class="p-2 hover:bg-muted rounded-lg transition-colors">
+                <svg class="w-5 h-5 text-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"></path>
+                </svg>
+              </button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-4 space-y-6">
+              <div class="flex flex-col items-center space-y-4">
+                <div class="w-20 h-20 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-3xl font-bold">
+                  JD
+                </div>
+                <h2 class="text-2xl font-bold text-foreground">Juan Diego</h2>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div class="bg-card border border-border rounded-xl p-4 text-center">
+                  <div class="flex items-center justify-center mb-2">
+                    <svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                      <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                      <path d="M4 22h16"></path>
+                      <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                      <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                      <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+                    </svg>
+                  </div>
+                  <p class="text-2xl font-bold text-foreground">12</p>
+                  <p class="text-xs text-muted-foreground">Matches played</p>
+                </div>
+                <div class="bg-card border border-border rounded-xl p-4 text-center">
+                  <div class="flex items-center justify-center mb-2">
+                    <svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path>
+                      <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                  </div>
+                  <p class="text-lg font-semibold text-foreground">Downtown</p>
+                  <p class="text-xs text-muted-foreground">Area</p>
+                </div>
+              </div>
+
+              <div>
+                <h3 class="text-lg font-semibold text-foreground mb-3">Skills</h3>
+                <div class="space-y-3">
+                  <div class="bg-card border border-border rounded-xl p-4">
+                    <div class="flex items-center justify-between mb-2">
+                      <span class="font-semibold text-foreground capitalize">Padel</span>
+                      <span class="text-sm px-3 py-1 bg-primary/20 text-primary rounded-full capitalize font-medium">intermediate</span>
+                    </div>
+                    <div class="w-full bg-muted rounded-full h-2">
+                      <div class="bg-primary h-2 rounded-full" style="width: 66%"></div>
+                    </div>
+                  </div>
+
+                  <div class="bg-card border border-border rounded-xl p-4">
+                    <div class="flex items-center justify-between mb-2">
+                      <span class="font-semibold text-foreground capitalize">Football</span>
+                      <span class="text-sm px-3 py-1 bg-primary/20 text-primary rounded-full capitalize font-medium">intermediate</span>
+                    </div>
+                    <div class="w-full bg-muted rounded-full h-2">
+                      <div class="bg-primary h-2 rounded-full" style="width: 66%"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-foreground mb-2">Location</label>
+                <div class="flex items-center gap-2 text-muted-foreground">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                  </svg>
+                  <span>Downtown</span>
+                </div>
+              </div>
+
+              <button class="w-full py-3 border border-border text-foreground rounded-lg font-semibold hover:bg-muted transition-colors">
+                Sign out
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <nav class="border-t border-border bg-background">
+          <div class="flex justify-around items-center">
+            <button class="flex-1 py-4 px-3 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground">
+              <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path>
+                <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              </svg>
+              <span class="text-xs font-medium">Home</span>
+            </button>
+            <button class="flex-1 py-4 px-3 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground">
+              <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.3-4.3"></path>
+              </svg>
+              <span class="text-xs font-medium">Search</span>
+            </button>
+            <button class="flex-1 py-4 px-3 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground">
+              <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
+                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M5 12h14"></path>
+                  <path d="M12 5v14"></path>
+                </svg>
+              </div>
+              <span class="text-xs font-medium">Publish</span>
+            </button>
+            <button class="flex-1 py-4 px-3 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground">
+              <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"></path>
+              </svg>
+              <span class="text-xs font-medium">Chats</span>
+            </button>
+            <button class="flex-1 py-4 px-3 flex flex-col items-center justify-center gap-1 text-primary">
+              <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <span class="text-xs font-medium">Profile</span>
+            </button>
+          </div>
+        </nav>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,49 @@
+:root {
+  --background: 1 0 0;
+  --foreground: 0.15 0 0;
+  --card: 0.99 0 0;
+  --card-foreground: 0.15 0 0;
+  --popover: 1 0 0;
+  --popover-foreground: 0.15 0 0;
+  --primary: 0.56 0.15 142;
+  --primary-foreground: 1 0 0;
+  --secondary: 0.93 0.01 0;
+  --secondary-foreground: 0.15 0 0;
+  --muted: 0.85 0.01 0;
+  --muted-foreground: 0.55 0.01 0;
+  --accent: 0.56 0.15 142;
+  --accent-foreground: 1 0 0;
+  --destructive: 0.577 0.245 27.325;
+  --destructive-foreground: 1 0 0;
+  --border: 0.93 0 0;
+  --input: 0.96 0 0;
+  --ring: 0.56 0.15 142;
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: 0.145 0 0;
+  --foreground: 0.985 0 0;
+  --card: 0.145 0 0;
+  --card-foreground: 0.985 0 0;
+  --popover: 0.145 0 0;
+  --popover-foreground: 0.985 0 0;
+  --primary: 0.985 0 0;
+  --primary-foreground: 0.205 0 0;
+  --secondary: 0.269 0 0;
+  --secondary-foreground: 0.985 0 0;
+  --muted: 0.269 0 0;
+  --muted-foreground: 0.708 0 0;
+  --accent: 0.269 0 0;
+  --accent-foreground: 0.985 0 0;
+  --destructive: 0.396 0.141 25.723;
+  --destructive-foreground: 0.637 0.237 25.331;
+  --border: 0.269 0 0;
+  --input: 0.269 0 0;
+  --ring: 0.439 0 0;
+}
+
+body {
+  background-color: oklch(var(--background));
+  color: oklch(var(--foreground));
+}
