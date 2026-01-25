@@ -1,75 +1,26 @@
-# Nuxt Minimal Starter
+# Partidito
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Partidito es una aplicacion web mobile-first para ayudar a completar partidos de forma rapida. El foco esta en encontrar, unirse y publicar partidos con la menor friccion para el usuario posible.
 
-## Setup
+## Como empezar
 
-Make sure to install dependencies:
+Instala dependencias:
 
 ```bash
-# npm
-npm install
-
-# pnpm
 pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
 ```
 
-## Development Server
-
-Start the development server on `http://localhost:3000`:
+Levanta el servidor de desarrollo:
 
 ```bash
-# npm
-npm run dev
-
-# pnpm
 pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
 ```
 
-## Production
+La app corre en `http://localhost:3000`.
 
-Build the application for production:
+## Scripts utiles
 
 ```bash
-# npm
-npm run build
-
-# pnpm
 pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
 pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
 ```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
