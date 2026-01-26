@@ -1,28 +1,30 @@
 <template>
-    <div
-        class="w-full max-w-xl flex flex-col h-screen bg-background rounded-3xl overflow-hidden shadow-2xl mx-auto"
-    >
-        <div class="flex-1 overflow-y-auto">
-            <slot />
-        </div>
-        <nav class="border-t border-border bg-background">
-            <div class="flex justify-around items-center">
-                <button
-                    v-for="item in navItems"
-                    :key="item.label"
-                    @click="handleNavigate(item.route)"
-                    :class="[
-                        'flex-1 py-4 px-3 flex flex-col items-center justify-center gap-1',
-                        isActive(item.route)
-                            ? 'text-primary'
-                            : 'text-muted-foreground hover:text-foreground',
-                    ]"
-                >
-                    <Icon :name="item.icon" class="w-6 h-6" />
-                    <span class="text-xs font-medium">{{ item.label }}</span>
-                </button>
+    <div class="flex items-center justify-center min-h-screen bg-background p-4 md:items-stretch md:p-0">
+        <div
+            class="w-full max-w-sm flex flex-col h-screen md:h-screen md:max-w-xl bg-background rounded-3xl overflow-hidden shadow-2xl "
+        >
+            <div class="flex-1 overflow-y-auto">
+                <slot />
             </div>
-        </nav>
+            <nav class="border-t border-border bg-background">
+                <div class="flex justify-around items-center">
+                    <button
+                        v-for="item in navItems"
+                        :key="item.label"
+                        @click="handleNavigate(item.route)"
+                        :class="[
+                            'flex-1 py-4 px-3 flex flex-col items-center justify-center gap-1',
+                            isActive(item.route)
+                                ? 'text-primary'
+                                : 'text-muted-foreground hover:text-foreground',
+                        ]"
+                    >
+                        <Icon :name="item.icon" class="w-6 h-6" />
+                        <span class="text-xs font-medium">{{ item.label }}</span>
+                    </button>
+                </div>
+            </nav>
+        </div>
     </div>
 </template>
 
