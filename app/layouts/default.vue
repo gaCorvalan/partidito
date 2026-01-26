@@ -1,7 +1,7 @@
 <template>
-    <div class="flex items-center justify-center min-h-screen bg-background p-4 md:items-stretch md:p-0">
+    <div class="flex items-center justify-center min-h-screen bg-background md:items-stretch md:p-0">
         <div
-            class="w-full max-w-sm flex flex-col h-screen md:h-screen md:max-w-xl bg-background rounded-3xl overflow-hidden shadow-2xl"
+            class="w-full flex flex-col h-screen md:h-screen md:max-w-xl bg-background rounded-3xl overflow-hidden shadow-2xl"
         >
             <div class="flex-1 overflow-y-auto">
                 <slot />
