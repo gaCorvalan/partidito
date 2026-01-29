@@ -38,13 +38,14 @@ const chatsSeed: ChatListItem[] = [
   }
 ]
 
-type MatchRow = {
-  id: string
+type ChatRow = {
+  match_id: string
   venue: string
   date: string
   time: string
-  match_participants?: Array<{ count: number }>
-  messages?: Array<{ content: string; created_at: string }>
+  participants: number
+  last_message: string | null
+  last_message_at: string | null
 }
 
 const formatRelativeTime = (value?: string) => {
@@ -57,15 +58,34 @@ const formatRelativeTime = (value?: string) => {
   return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`
 }
 
-const mapChatRow = (row: MatchRow): ChatListItem => {
-  const lastMessage = row.messages?.[0]
+const formatTimeLabel = (dateValue: string, timeValue: string) => {
+  const target = new Date(`${dateValue}T${timeValue}`)
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const tomorrow = new Date(today)
+  tomorrow.setDate(today.getDate() + 1)
+  const targetDay = new Date(target.getFullYear(), target.getMonth(), target.getDate())
+
+  const diffDays = Math.floor((targetDay.getTime() - today.getTime()) / 86400000)
+
+  if (diffDays === 0) return `Today ${timeValue}`
+  if (diffDays === 1) return `Tomorrow ${timeValue}`
+  if (diffDays > 1 && diffDays < 7) {
+    const weekday = new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(target)
+    return `This week · ${weekday} ${timeValue}`
+  }
+
+  return `${dateValue} ${timeValue}`
+}
+
+const mapChatRow = (row: ChatRow): ChatListItem => {
   return {
-    id: row.id,
+    id: row.match_id,
     title: row.venue,
-    timeAgo: formatRelativeTime(lastMessage?.created_at),
-    timeLabel: `${row.date} ${row.time}`,
-    lastMessage: lastMessage?.content ?? 'Sin mensajes',
-    participants: row.match_participants?.[0]?.count ?? 0
+    timeAgo: formatRelativeTime(row.last_message_at ?? undefined),
+    timeLabel: formatTimeLabel(row.date, row.time),
+    lastMessage: row.last_message ?? 'Sin mensajes',
+    participants: row.participants
   }
 }
 
@@ -76,15 +96,15 @@ export const useChatsList = () => {
     queryKey: ['chats'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('matches')
-        .select('id, venue, date, time, match_participants(count), messages(content, created_at)')
+        .from('match_chats')
+        .select('match_id, venue, date, time, participants, last_message, last_message_at')
         .order('date', { ascending: true })
 
       if (error) {
         throw error
       }
 
-      return (data as MatchRow[]).map(mapChatRow)
+      return (data as ChatRow[]).map(mapChatRow)
     },
     initialData: chatsSeed
   })
