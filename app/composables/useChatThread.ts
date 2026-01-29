@@ -1,3 +1,7 @@
+import { computed } from 'vue'
+import { useQuery } from '@tanstack/vue-query'
+import { useSupabaseClient } from '~/composables/useSupabaseClient'
+
 export type ChatMessageType = 'system' | 'incoming' | 'outgoing'
 
 export interface ChatMessage {
@@ -8,43 +12,114 @@ export interface ChatMessage {
   time?: string
 }
 
-export const useChatThread = () => {
-  const title = 'Match Chat'
-  const messages: ChatMessage[] = [
-    {
-      id: 'system-1',
-      type: 'system',
-      text: 'Juan joined the match'
-    },
-    {
-      id: 'msg-1',
-      type: 'incoming',
-      author: 'Juan',
-      text: 'Hey! Just arrived, parking now',
-      time: '19:05'
-    },
-    {
-      id: 'msg-2',
-      type: 'incoming',
-      author: 'Maria',
-      text: "Great, we're setting up",
-      time: '19:07'
-    },
-    {
-      id: 'msg-3',
-      type: 'incoming',
-      author: 'Carlos',
-      text: 'See you at 7pm!',
-      time: '19:08'
-    },
-    {
-      id: 'msg-4',
-      type: 'outgoing',
-      author: 'You',
-      text: 'Perfect! see you soon',
-      time: '19:10'
-    }
-  ]
+type MessageRow = {
+  id: string
+  type: 'user' | 'system'
+  content: string
+  created_at: string
+  profiles?: { full_name: string } | null
+}
 
-  return { title, messages }
+const messagesSeed: Array<ChatMessage & { matchId: string }> = [
+  {
+    id: 'system-1',
+    matchId: 'pacheco-padel',
+    type: 'system',
+    text: 'Juan joined the match'
+  },
+  {
+    id: 'msg-1',
+    matchId: 'pacheco-padel',
+    type: 'incoming',
+    author: 'Juan',
+    text: 'Hey! Just arrived, parking now',
+    time: '19:05'
+  },
+  {
+    id: 'msg-2',
+    matchId: 'pacheco-padel',
+    type: 'incoming',
+    author: 'Maria',
+    text: "Great, we're setting up",
+    time: '19:07'
+  },
+  {
+    id: 'msg-3',
+    matchId: 'pacheco-padel',
+    type: 'incoming',
+    author: 'Carlos',
+    text: 'See you at 7pm!',
+    time: '19:08'
+  },
+  {
+    id: 'msg-4',
+    matchId: 'pacheco-padel',
+    type: 'outgoing',
+    author: 'You',
+    text: 'Perfect! see you soon',
+    time: '19:10'
+  }
+]
+
+const formatTime = (value: string) => {
+  const date = new Date(value)
+  return new Intl.DateTimeFormat('es-AR', { hour: '2-digit', minute: '2-digit' }).format(date)
+}
+
+const mapMessageRow = (row: MessageRow, currentUserName: string): ChatMessage => {
+  if (row.type === 'system') {
+    return {
+      id: row.id,
+      type: 'system',
+      text: row.content
+    }
+  }
+
+  const author = row.profiles?.full_name ?? 'Usuario'
+  const type = author === currentUserName ? 'outgoing' : 'incoming'
+
+  return {
+    id: row.id,
+    type,
+    author: type === 'outgoing' ? 'You' : author,
+    text: row.content,
+    time: formatTime(row.created_at)
+  }
+}
+
+export const useChatThread = (matchId: string) => {
+  const supabase = useSupabaseClient()
+  const title = 'Match Chat'
+  const currentUserName = 'Juan Diego'
+
+  const seed = messagesSeed.filter((message) => message.matchId === matchId)
+
+  const query = useQuery({
+    queryKey: ['chat', matchId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('messages')
+        .select('id, type, content, created_at, profiles(full_name)')
+        .eq('match_id', matchId)
+        .order('created_at', { ascending: true })
+
+      if (error) {
+        throw error
+      }
+
+      return (data as MessageRow[]).map((row) => mapMessageRow(row, currentUserName))
+    },
+    initialData: seed
+  })
+
+  const messages = computed(() => query.data.value ?? seed)
+  const error = computed(() => (query.error.value ? String(query.error.value) : null))
+
+  return {
+    title,
+    messages,
+    isLoading: query.isLoading,
+    error,
+    refresh: query.refetch
+  }
 }

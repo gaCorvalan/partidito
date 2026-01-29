@@ -9,7 +9,7 @@ const route = useRoute()
 const activeTab = ref<'info' | 'chat'>('info')
 
 const { match, isJoined, statusLabel, toggleJoin } = useMatchDetail(String(route.params.id))
-const { messages } = useChatThread()
+const { messages } = useChatThread(String(route.params.id))
 
 const joinLabel = computed(() => (isJoined.value ? 'Leave match' : 'Join match'))
 

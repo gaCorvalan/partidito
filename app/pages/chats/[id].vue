@@ -4,7 +4,7 @@ import ChatMessageBubble from '~/components/features/ChatMessageBubble.vue'
 import ChatComposer from '~/components/features/ChatComposer.vue'
 import { useChatThread } from '~/composables/useChatThread'
 
-const { title, messages } = useChatThread()
+const { title, messages } = useChatThread(String(route.params.id))
 
 const handleBack = () => {
   navigateTo('/chats')
