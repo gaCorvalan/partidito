@@ -1,5 +1,8 @@
 <template>
-  <div class="bg-card border border-border rounded-2xl p-4 space-y-3 hover:shadow-md transition-shadow cursor-pointer">
+  <div
+    class="bg-card border border-border rounded-2xl p-4 space-y-3 hover:shadow-md transition-shadow cursor-pointer"
+    @click="$emit('open', match.id)"
+  >
     <div class="flex items-start justify-between">
       <div class="space-y-1">
         <h3 class="font-semibold text-sm text-foreground capitalize">{{ match.sport }} · {{ match.level }}</h3>
@@ -48,6 +51,8 @@
             ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-50'
             : 'bg-primary text-primary-foreground hover:opacity-90'
         ]"
+        type="button"
+        @click.stop
       >
         {{ match.isFull ? 'Full' : 'Join' }}
       </button>
@@ -57,6 +62,7 @@
 
 <script setup lang="ts">
 interface Match {
+  id: string
   sport: string
   level: string
   missingPlayers: number
@@ -72,5 +78,9 @@ interface Match {
 
 defineProps<{
   match: Match
+}>()
+
+defineEmits<{
+  open: [id: string]
 }>()
 </script>

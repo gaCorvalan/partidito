@@ -1,13 +1,21 @@
-<script setup lang="ts">
-import { reactive, ref } from 'vue'
-import SearchHeader from '~/components/features/SearchHeader.vue'
-import FilterGroup from '~/components/features/FilterGroup.vue'
-import MatchCard from '~/components/features/MatchCard.vue'
-import { useSearchFilters } from '~/composables/useSearchFilters'
+import { computed, ref } from 'vue'
 
-const groups = reactive(useSearchFilters().groups)
+export interface MatchDetail {
+  id: string
+  sport: string
+  level: string
+  missingPlayers: number
+  price: number
+  dateDisplay: string
+  location: string
+  distance: number
+  currentPlayers: number
+  totalPlayers: number
+  isFull: boolean
+  players: string[]
+}
 
-const matches = ref([
+const matches: MatchDetail[] = [
   {
     id: 'pacheco-padel',
     sport: 'padel',
@@ -78,41 +86,20 @@ const matches = ref([
     isFull: false,
     players: ['P', 'P']
   }
-])
+]
 
-const handleSelect = (groupId: string, value: string) => {
-  const group = groups.find((item) => item.id === groupId)
-  if (group) {
-    group.selected = value
+export const useMatchDetail = (id: string) => {
+  const match = computed(() => matches.find((item) => item.id === id) ?? matches[0])
+  const isJoined = ref(false)
+
+  const statusLabel = computed(() => {
+    return match.value.isFull ? 'Full' : `Missing ${match.value.missingPlayers}`
+  })
+
+  const toggleJoin = () => {
+    if (match.value.isFull && !isJoined.value) return
+    isJoined.value = !isJoined.value
   }
+
+  return { match, isJoined, statusLabel, toggleJoin }
 }
-</script>
-
-<template>
-  <div class="h-full flex flex-col">
-    <SearchHeader title="Find matches" placeholder="Search by club or area" />
-
-    <div class="bg-background border-b border-border p-4 space-y-4">
-      <FilterGroup
-        v-for="group in groups"
-        :key="group.id"
-        :label="group.label"
-        :options="group.options"
-        :selected="group.selected"
-        @select="handleSelect(group.id, $event)"
-      />
-    </div>
-
-    <div class="flex-1 overflow-y-auto">
-      <div class="space-y-3 p-4">
-        <p class="text-sm text-muted-foreground">{{ matches.length }} matches found</p>
-        <MatchCard
-          v-for="match in matches"
-          :key="match.id"
-          :match="match"
-          @open="navigateTo(`/match/${match.id}`)"
-        />
-      </div>
-    </div>
-  </div>
-</template>

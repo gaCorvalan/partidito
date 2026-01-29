@@ -12,6 +12,7 @@ const activeFilter = ref("all");
 
 const matches = ref([
     {
+        id: "pacheco-padel",
         sport: "padel",
         level: "intermediate",
         missingPlayers: 1,
@@ -25,6 +26,7 @@ const matches = ref([
         players: ["P", "P", "P"],
     },
     {
+        id: "central-football",
         sport: "football",
         level: "beginner",
         missingPlayers: 1,
@@ -38,6 +40,7 @@ const matches = ref([
         players: ["P", "P", "P"],
     },
     {
+        id: "elite-padel",
         sport: "padel",
         level: "advanced",
         missingPlayers: 0,
@@ -51,6 +54,7 @@ const matches = ref([
         players: ["P", "P", "P"],
     },
     {
+        id: "municipal-football",
         sport: "football",
         level: "intermediate",
         missingPlayers: 4,
@@ -64,6 +68,7 @@ const matches = ref([
         players: ["P", "P", "P"],
     },
     {
+        id: "city-padel",
         sport: "padel",
         level: "beginner",
         missingPlayers: 2,
@@ -92,8 +97,9 @@ const handleFilterChange = (filter: string) => {
     <div class="space-y-3 p-4">
         <MatchCard
             v-for="match in matches"
-            :key="match.dateDisplay"
+            :key="match.id"
             :match="match"
+            @open="navigateTo(`/match/${match.id}`)"
         />
     </div>
 </template>
