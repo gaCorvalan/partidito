@@ -19,7 +19,8 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       supabaseUrl: '',
-      supabaseAnonKey: ''
+      supabaseAnonKey: '',
+      supabaseUserId: ''
     }
   }
 })
