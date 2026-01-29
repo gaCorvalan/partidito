@@ -14,5 +14,12 @@ export default defineNuxtConfig({
 
   tailwindcss: {
     viewer: false
+  },
+
+  runtimeConfig: {
+    public: {
+      supabaseUrl: '',
+      supabaseAnonKey: ''
+    }
   }
 })

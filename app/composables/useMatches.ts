@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import { useSupabaseClient } from '~/composables/useSupabaseClient'
 
 export interface MatchItem {
   id: string
@@ -88,8 +89,67 @@ export const matchesSeed: MatchItem[] = [
   }
 ]
 
-export const useMatches = () => {
-  const matches = ref(matchesSeed)
-
-  return { matches }
+type MatchRow = {
+  id: string
+  sport: string
+  level: string
+  missing_players: number
+  price: number
+  date: string
+  time: string
+  venue: string
+  status: string
+  total_players: number
+  match_participants?: Array<{ count: number }>
 }
+
+const mapMatchRow = (row: MatchRow): MatchItem => {
+  const currentPlayers = row.match_participants?.[0]?.count ?? 0
+  return {
+    id: row.id,
+    sport: row.sport,
+    level: row.level,
+    missingPlayers: row.missing_players,
+    price: row.price,
+    dateDisplay: `${row.date} ${row.time}`,
+    location: row.venue,
+    distance: 0,
+    currentPlayers,
+    totalPlayers: row.total_players,
+    isFull: row.status === 'full',
+    players: Array.from({ length: Math.min(currentPlayers, 3) }, () => 'P')
+  }
+}
+
+export const useMatches = () => {
+  const supabase = useSupabaseClient()
+  const matches = ref<MatchItem[]>([])
+  const isLoading = ref(true)
+  const error = ref<string | null>(null)
+
+  const fetchMatches = async () => {
+    isLoading.value = true
+    error.value = null
+
+    const { data, error: requestError } = await supabase
+      .from('matches')
+      .select('id, sport, level, missing_players, price, date, time, venue, status, total_players, match_participants(count)')
+      .order('date', { ascending: true })
+      .order('time', { ascending: true })
+
+    if (requestError) {
+      error.value = requestError.message
+      matches.value = matchesSeed
+    } else {
+      matches.value = (data as MatchRow[]).map(mapMatchRow)
+    }
+
+    isLoading.value = false
+  }
+
+  fetchMatches()
+
+  return { matches, isLoading, error, refresh: fetchMatches }
+}
+
+export const mapMatchToItem = mapMatchRow
