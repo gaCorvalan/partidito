@@ -1,4 +1,5 @@
-import { ref } from 'vue'
+import { computed } from 'vue'
+import { useQuery } from '@tanstack/vue-query'
 import { useSupabaseClient } from '~/composables/useSupabaseClient'
 
 export interface MatchItem {
@@ -123,33 +124,33 @@ const mapMatchRow = (row: MatchRow): MatchItem => {
 
 export const useMatches = () => {
   const supabase = useSupabaseClient()
-  const matches = ref<MatchItem[]>([])
-  const isLoading = ref(true)
-  const error = ref<string | null>(null)
+  const query = useQuery({
+    queryKey: ['matches'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('matches')
+        .select('id, sport, level, missing_players, price, date, time, venue, status, total_players, match_participants(count)')
+        .order('date', { ascending: true })
+        .order('time', { ascending: true })
 
-  const fetchMatches = async () => {
-    isLoading.value = true
-    error.value = null
+      if (error) {
+        throw error
+      }
 
-    const { data, error: requestError } = await supabase
-      .from('matches')
-      .select('id, sport, level, missing_players, price, date, time, venue, status, total_players, match_participants(count)')
-      .order('date', { ascending: true })
-      .order('time', { ascending: true })
+      return (data as MatchRow[]).map(mapMatchRow)
+    },
+    initialData: matchesSeed
+  })
 
-    if (requestError) {
-      error.value = requestError.message
-      matches.value = matchesSeed
-    } else {
-      matches.value = (data as MatchRow[]).map(mapMatchRow)
-    }
+  const matches = computed(() => query.data.value ?? matchesSeed)
+  const error = computed(() => (query.error.value ? String(query.error.value) : null))
 
-    isLoading.value = false
+  return {
+    matches,
+    isLoading: query.isLoading,
+    error,
+    refresh: query.refetch
   }
-
-  fetchMatches()
-
-  return { matches, isLoading, error, refresh: fetchMatches }
 }
 
 export const mapMatchToItem = mapMatchRow

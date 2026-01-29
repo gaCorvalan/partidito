@@ -1,4 +1,5 @@
 import { computed, ref } from 'vue'
+import { useQuery } from '@tanstack/vue-query'
 import { mapMatchToItem, matchesSeed } from '~/composables/useMatches'
 import { useSupabaseClient } from '~/composables/useSupabaseClient'
 
@@ -19,30 +20,29 @@ export interface MatchDetail {
 
 export const useMatchDetail = (id: string) => {
   const supabase = useSupabaseClient()
-  const match = ref<MatchDetail>(matchesSeed[0] as MatchDetail)
-  const isLoading = ref(true)
-  const error = ref<string | null>(null)
+  const fallbackMatch = (matchesSeed.find((item) => item.id === id) as MatchDetail) ?? (matchesSeed[0] as MatchDetail)
   const isJoined = ref(false)
 
-  const fetchMatch = async () => {
-    isLoading.value = true
-    error.value = null
+  const query = useQuery({
+    queryKey: ['match', id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('matches')
+        .select('id, sport, level, missing_players, price, date, time, venue, status, total_players, match_participants(count)')
+        .eq('id', id)
+        .single()
 
-    const { data, error: requestError } = await supabase
-      .from('matches')
-      .select('id, sport, level, missing_players, price, date, time, venue, status, total_players, match_participants(count)')
-      .eq('id', id)
-      .single()
+      if (error) {
+        throw error
+      }
 
-    if (requestError) {
-      error.value = requestError.message
-      match.value = (matchesSeed.find((item) => item.id === id) as MatchDetail) ?? (matchesSeed[0] as MatchDetail)
-    } else if (data) {
-      match.value = mapMatchToItem(data) as MatchDetail
-    }
+      return mapMatchToItem(data) as MatchDetail
+    },
+    initialData: fallbackMatch
+  })
 
-    isLoading.value = false
-  }
+  const match = computed(() => query.data.value ?? fallbackMatch)
+  const error = computed(() => (query.error.value ? String(query.error.value) : null))
 
   const statusLabel = computed(() => {
     return match.value.isFull ? 'Full' : `Missing ${match.value.missingPlayers}`
@@ -53,7 +53,13 @@ export const useMatchDetail = (id: string) => {
     isJoined.value = !isJoined.value
   }
 
-  fetchMatch()
-
-  return { match, isLoading, error, isJoined, statusLabel, toggleJoin, refresh: fetchMatch }
+  return {
+    match,
+    isLoading: query.isLoading,
+    error,
+    isJoined,
+    statusLabel,
+    toggleJoin,
+    refresh: query.refetch
+  }
 }
