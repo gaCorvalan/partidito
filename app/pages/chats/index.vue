@@ -15,7 +15,25 @@ const handleOpen = (id: string) => {
     <ChatsHeader title="Chats" />
 
     <div class="flex-1 overflow-y-auto">
-      <div class="space-y-0">
+      <div v-if="!chats.length" class="p-6 text-center space-y-3">
+        <div class="mx-auto w-12 h-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
+          <Icon name="lucide:message-square" class="w-6 h-6" />
+        </div>
+        <div class="space-y-1">
+          <p class="text-sm font-semibold text-foreground">Aun no tienes conversaciones</p>
+          <p class="text-xs text-muted-foreground">
+            Cuando te unas a un partido, el chat aparecera aqui.
+          </p>
+        </div>
+        <button
+          class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg border border-border hover:bg-muted transition-colors"
+          type="button"
+          @click="navigateTo('/')"
+        >
+          Explorar partidos
+        </button>
+      </div>
+      <div v-else class="space-y-0">
         <ChatListItem
           v-for="chat in chats"
           :key="chat.id"
