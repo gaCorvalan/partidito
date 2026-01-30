@@ -1,5 +1,5 @@
 import { computed, ref } from 'vue'
-import { useQuery } from '@tanstack/vue-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import { mapMatchToItem, matchesSeed } from '~/composables/useMatches'
 import { useSupabaseClient } from '~/composables/useSupabaseClient'
 
@@ -20,8 +20,10 @@ export interface MatchDetail {
 
 export const useMatchDetail = (id: string) => {
   const supabase = useSupabaseClient()
+  const queryClient = useQueryClient()
   const fallbackMatch = (matchesSeed.find((item) => item.id === id) as MatchDetail) ?? (matchesSeed[0] as MatchDetail)
   const isJoined = ref(false)
+  const userId = useRuntimeConfig().public.supabaseUserId
 
   const query = useQuery({
     queryKey: ['match', id],
@@ -48,9 +50,51 @@ export const useMatchDetail = (id: string) => {
     return match.value.isFull ? 'Full' : `Missing ${match.value.missingPlayers}`
   })
 
+  const joinMutation = useMutation({
+    mutationFn: async () => {
+      if (!userId) throw new Error('Usuario no configurado')
+      if (match.value.isFull) return
+
+      const { error } = await supabase
+        .from('match_participants')
+        .insert({ match_id: match.value.id, user_id: userId })
+
+      if (error) throw error
+    },
+    onSuccess: () => {
+      isJoined.value = true
+      queryClient.invalidateQueries({ queryKey: ['matches'] })
+      queryClient.invalidateQueries({ queryKey: ['match', id] })
+      queryClient.invalidateQueries({ queryKey: ['chats'] })
+    }
+  })
+
+  const leaveMutation = useMutation({
+    mutationFn: async () => {
+      if (!userId) throw new Error('Usuario no configurado')
+
+      const { error } = await supabase
+        .from('match_participants')
+        .delete()
+        .eq('match_id', match.value.id)
+        .eq('user_id', userId)
+
+      if (error) throw error
+    },
+    onSuccess: () => {
+      isJoined.value = false
+      queryClient.invalidateQueries({ queryKey: ['matches'] })
+      queryClient.invalidateQueries({ queryKey: ['match', id] })
+      queryClient.invalidateQueries({ queryKey: ['chats'] })
+    }
+  })
+
   const toggleJoin = () => {
-    if (match.value.isFull && !isJoined.value) return
-    isJoined.value = !isJoined.value
+    if (isJoined.value) {
+      leaveMutation.mutate()
+    } else {
+      joinMutation.mutate()
+    }
   }
 
   return {
@@ -60,6 +104,10 @@ export const useMatchDetail = (id: string) => {
     isJoined,
     statusLabel,
     toggleJoin,
+    joinStatus: computed(() => ({
+      isJoining: joinMutation.isPending.value,
+      isLeaving: leaveMutation.isPending.value
+    })),
     refresh: query.refetch
   }
 }

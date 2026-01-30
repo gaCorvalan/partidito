@@ -8,7 +8,7 @@ import { useMatchDetail } from '~/composables/useMatchDetail'
 const route = useRoute()
 const activeTab = ref<'info' | 'chat'>('info')
 
-const { match, isJoined, statusLabel, toggleJoin } = useMatchDetail(String(route.params.id))
+const { match, isJoined, statusLabel, toggleJoin, joinStatus } = useMatchDetail(String(route.params.id))
 const { messages } = useChatThread(String(route.params.id))
 
 const joinLabel = computed(() => (isJoined.value ? 'Leave match' : 'Join match'))
@@ -112,9 +112,10 @@ const handleSend = (message: string) => {
             class="w-full py-3 rounded-lg font-semibold transition-opacity"
             :class="isJoined ? 'bg-muted text-muted-foreground' : 'bg-primary text-primary-foreground hover:opacity-90'"
             type="button"
+            :disabled="joinStatus.isJoining || joinStatus.isLeaving"
             @click="toggleJoin"
           >
-            {{ joinLabel }}
+            {{ joinStatus.isJoining ? 'Joining...' : joinStatus.isLeaving ? 'Leaving...' : joinLabel }}
           </button>
           <div class="grid grid-cols-2 gap-2">
             <button

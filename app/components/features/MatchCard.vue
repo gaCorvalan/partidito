@@ -52,7 +52,7 @@
             : 'bg-primary text-primary-foreground hover:opacity-90'
         ]"
         type="button"
-        @click.stop
+        @click.stop="$emit('join', match.id)"
       >
         {{ match.isFull ? 'Full' : 'Join' }}
       </button>
@@ -82,5 +82,6 @@ defineProps<{
 
 defineEmits<{
   open: [id: string]
+  join: [id: string]
 }>()
 </script>
