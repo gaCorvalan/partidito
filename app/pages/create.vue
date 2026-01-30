@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import PublishHeader from '~/components/features/PublishHeader.vue'
 import PublishSelectField from '~/components/features/PublishSelectField.vue'
 import PublishOptionGroup from '~/components/features/PublishOptionGroup.vue'
@@ -7,6 +8,7 @@ import PublishLevelGroup from '~/components/features/PublishLevelGroup.vue'
 import PublishInputField from '~/components/features/PublishInputField.vue'
 import PublishSubmitBar from '~/components/features/PublishSubmitBar.vue'
 import { usePublishForm } from '~/composables/usePublishForm'
+import { useSupabaseClient } from '~/composables/useSupabaseClient'
 
 const { sportOptions, dateOptions, levelOptions, missingPlayersOptions } = usePublishForm()
 
@@ -19,12 +21,62 @@ const level = ref('intermediate')
 const price = ref('2500')
 const note = ref('')
 
+const supabase = useSupabaseClient()
+const queryClient = useQueryClient()
+const userId = useRuntimeConfig().public.supabaseUserId
+
+const resolvedDate = computed(() => {
+  const base = new Date()
+  if (date.value === 'tomorrow') {
+    base.setDate(base.getDate() + 1)
+  }
+  if (date.value === 'week') {
+    base.setDate(base.getDate() + 3)
+  }
+  return base.toISOString().slice(0, 10)
+})
+
+const totalPlayers = computed(() => (sport.value === 'padel' ? 4 : 8))
+
+const publishMutation = useMutation({
+  mutationFn: async () => {
+    if (!userId) throw new Error('Usuario no configurado')
+
+    const { data, error } = await supabase
+      .from('matches')
+      .insert({
+        sport: sport.value,
+        level: level.value,
+        date: resolvedDate.value,
+        time: time.value,
+        venue: venue.value || 'Sin lugar',
+        price: Number(price.value),
+        note: note.value || null,
+        missing_players: Number(missingPlayers.value),
+        total_players: totalPlayers.value,
+        status: 'open',
+        created_by: userId
+      })
+      .select('id')
+      .single()
+
+    if (error) throw error
+    return data
+  },
+  onSuccess: (data) => {
+    queryClient.invalidateQueries({ queryKey: ['matches'] })
+    if (data?.id) {
+      navigateTo(`/match/${data.id}`)
+    }
+  }
+})
+
 const handleBack = () => {
   navigateTo('/')
 }
 
 const handleSubmit = () => {
-  // Placeholder para futura publicacion
+  publishMutation.mutate()
 }
 </script>
 
