@@ -1,6 +1,7 @@
 import { computed } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
 import { useSupabaseClient } from '~/composables/useSupabaseClient'
+import { useAuth } from '~/composables/useAuth'
 
 export interface MatchItem {
   id: string
@@ -9,11 +10,14 @@ export interface MatchItem {
   missingPlayers: number
   price: number
   dateDisplay: string
+  date?: string
+  time?: string
   location: string
   distance: number
   currentPlayers: number
   totalPlayers: number
   isFull: boolean
+  isJoined?: boolean
   players: string[]
 }
 
@@ -25,6 +29,8 @@ export const matchesSeed: MatchItem[] = [
     missingPlayers: 1,
     price: 2500,
     dateDisplay: 'Today 19:00',
+    date: '2026-02-06',
+    time: '19:00',
     location: 'Pacheco Padel Center',
     distance: 2.3,
     currentPlayers: 3,
@@ -39,6 +45,8 @@ export const matchesSeed: MatchItem[] = [
     missingPlayers: 1,
     price: 3000,
     dateDisplay: 'Today 20:30',
+    date: '2026-02-06',
+    time: '20:30',
     location: 'Central Sports Complex',
     distance: 1.8,
     currentPlayers: 5,
@@ -53,6 +61,8 @@ export const matchesSeed: MatchItem[] = [
     missingPlayers: 0,
     price: 4000,
     dateDisplay: 'Tomorrow 18:00',
+    date: '2026-02-07',
+    time: '18:00',
     location: 'Elite Padel Club',
     distance: 3.5,
     currentPlayers: 4,
@@ -67,6 +77,8 @@ export const matchesSeed: MatchItem[] = [
     missingPlayers: 4,
     price: 2800,
     dateDisplay: 'Tomorrow 19:30',
+    date: '2026-02-07',
+    time: '19:30',
     location: 'Municipal Field',
     distance: 2.1,
     currentPlayers: 4,
@@ -81,6 +93,8 @@ export const matchesSeed: MatchItem[] = [
     missingPlayers: 2,
     price: 2200,
     dateDisplay: 'This week · Wed 17:00',
+    date: '2026-02-08',
+    time: '17:00',
     location: 'City Padel Courts',
     distance: 0.9,
     currentPlayers: 2,
@@ -101,11 +115,13 @@ type MatchRow = {
   venue: string
   status: string
   total_players: number
-  match_participants?: Array<{ count: number }>
+  match_participants?: Array<{ user_id: string }>
 }
 
-const mapMatchRow = (row: MatchRow): MatchItem => {
-  const currentPlayers = row.match_participants?.[0]?.count ?? 0
+const mapMatchRow = (row: MatchRow, currentUserId?: string | null): MatchItem => {
+  const participants = row.match_participants ?? []
+  const currentPlayers = Math.max(row.total_players - row.missing_players, 0)
+  const isJoined = currentUserId ? participants.some((participant) => participant.user_id === currentUserId) : false
   return {
     id: row.id,
     sport: row.sport,
@@ -113,23 +129,28 @@ const mapMatchRow = (row: MatchRow): MatchItem => {
     missingPlayers: row.missing_players,
     price: row.price,
     dateDisplay: `${row.date} ${row.time}`,
+    date: row.date,
+    time: row.time,
     location: row.venue,
     distance: 0,
     currentPlayers,
     totalPlayers: row.total_players,
     isFull: row.status === 'full',
+    isJoined,
     players: Array.from({ length: Math.min(currentPlayers, 3) }, () => 'P')
   }
 }
 
 export const useMatches = () => {
   const supabase = useSupabaseClient()
+  const { user } = useAuth()
+  const userId = computed(() => user.value?.id ?? null)
   const query = useQuery({
-    queryKey: ['matches'],
+    queryKey: ['matches', userId.value],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('matches')
-        .select('id, sport, level, missing_players, price, date, time, venue, status, total_players, match_participants(count)')
+        .select('id, sport, level, missing_players, price, date, time, venue, status, total_players, match_participants(user_id)')
         .order('date', { ascending: true })
         .order('time', { ascending: true })
 
@@ -137,7 +158,7 @@ export const useMatches = () => {
         throw error
       }
 
-      return (data as MatchRow[]).map(mapMatchRow)
+      return (data as MatchRow[]).map((row) => mapMatchRow(row, userId.value))
     },
     initialData: matchesSeed
   })
@@ -153,4 +174,4 @@ export const useMatches = () => {
   }
 }
 
-export const mapMatchToItem = mapMatchRow
+export const mapMatchToItem = (row: MatchRow, currentUserId?: string | null) => mapMatchRow(row, currentUserId)

@@ -44,17 +44,19 @@
         <span class="text-sm text-muted-foreground">{{ match.currentPlayers }}/{{ match.totalPlayers }}</span>
       </div>
       <button
-        :disabled="match.isFull"
+        :disabled="match.isFull || match.isJoined"
         :class="[
           'px-4 py-1.5 rounded-lg font-medium text-sm transition-colors',
           match.isFull
             ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-50'
-            : 'bg-primary text-primary-foreground hover:opacity-90'
+            : match.isJoined
+                ? 'bg-muted text-muted-foreground cursor-default'
+                : 'bg-primary text-primary-foreground hover:opacity-90'
         ]"
         type="button"
         @click.stop="$emit('join', match.id)"
       >
-        {{ match.isFull ? 'Full' : 'Join' }}
+        {{ match.isFull ? 'Full' : match.isJoined ? 'Unido' : 'Join' }}
       </button>
     </div>
   </div>
