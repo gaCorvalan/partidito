@@ -11,6 +11,7 @@ import { usePublishForm } from '~/composables/usePublishForm'
 import { useSupabaseClient } from '~/composables/useSupabaseClient'
 import { useAuth } from '~/composables/useAuth'
 
+const route = useRoute()
 const { sportOptions, dateOptions, levelOptions, missingPlayersOptions } = usePublishForm()
 
 const sport = ref('padel')
@@ -21,6 +22,7 @@ const venue = ref('')
 const level = ref('intermediate')
 const price = ref('2500')
 const note = ref('')
+const autoJoin = ref(true)
 
 const supabase = useSupabaseClient()
 const queryClient = useQueryClient()
@@ -43,7 +45,7 @@ const totalPlayers = computed(() => (sport.value === 'padel' ? 4 : 8))
 const publishMutation = useMutation({
   mutationFn: async () => {
     if (!userId.value) {
-      navigateTo('/login')
+      navigateTo(`/login?returnTo=${encodeURIComponent(route.fullPath)}`)
       return
     }
 
@@ -66,6 +68,25 @@ const publishMutation = useMutation({
       .single()
 
     if (error) throw error
+    if (data?.id && autoJoin.value) {
+      await supabase
+        .from('match_participants')
+        .insert({ match_id: data.id, user_id: userId.value })
+
+      const userName =
+        user.value?.user_metadata?.full_name ||
+        user.value?.user_metadata?.name ||
+        user.value?.email ||
+        'Usuario'
+
+      await supabase.from('messages').insert({
+        match_id: data.id,
+        user_id: userId.value,
+        type: 'system',
+        content: `${userName} creo el partido`
+      })
+    }
+
     return data
   },
   onSuccess: (data) => {
@@ -97,6 +118,24 @@ const handleSubmit = () => {
         :options="missingPlayersOptions"
         v-model="missingPlayers"
       />
+
+      <div class="flex items-center justify-between rounded-lg border border-border px-3 py-2.5">
+        <div>
+          <p class="text-sm font-semibold text-foreground">Unirme automaticamente</p>
+          <p class="text-xs text-muted-foreground">El creador se suma al partido.</p>
+        </div>
+        <button
+          class="w-11 h-6 rounded-full transition-colors"
+          :class="autoJoin ? 'bg-primary' : 'bg-muted'"
+          type="button"
+          @click="autoJoin = !autoJoin"
+        >
+          <span
+            class="block w-5 h-5 bg-background rounded-full transition-transform"
+            :class="autoJoin ? 'translate-x-5' : 'translate-x-0'"
+          ></span>
+        </button>
+      </div>
 
       <PublishSelectField label="Date" :options="dateOptions" v-model="date" />
 
