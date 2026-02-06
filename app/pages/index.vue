@@ -35,9 +35,11 @@ const supabase = useSupabaseClient()
 const { user } = useAuth()
 const queryClient = useQueryClient()
 const userId = computed(() => user.value?.id ?? null)
+const isAuthenticated = computed(() => Boolean(user.value))
 
 const upcomingExpanded = ref(false)
 const upcomingMatches = computed(() => {
+    if (!isAuthenticated.value) return []
     const today = new Date()
     const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate())
 
@@ -51,6 +53,7 @@ const upcomingMatches = computed(() => {
 })
 
 const feedMatches = computed(() => {
+    if (!isAuthenticated.value) return matches.value
     return matches.value.filter((match) => !match.isJoined)
 })
 
