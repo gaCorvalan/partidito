@@ -5,6 +5,7 @@ import HomeHeader from '~/components/features/HomeHeader.vue'
 import MatchCard from '~/components/features/MatchCard.vue'
 import { useMatches } from '~/composables/useMatches'
 import { useSupabaseClient } from '~/composables/useSupabaseClient'
+import { useAuth } from '~/composables/useAuth'
 const filters = [
     { label: "All", value: "all" },
     { label: "Padel", value: "padel" },
@@ -15,15 +16,19 @@ const activeFilter = ref("all");
 
 const { matches } = useMatches()
 const supabase = useSupabaseClient()
+const { user } = useAuth()
 const queryClient = useQueryClient()
-const userId = useRuntimeConfig().public.supabaseUserId
+const userId = computed(() => user.value?.id ?? null)
 
 const joinMutation = useMutation({
     mutationFn: async (matchId: string) => {
-        if (!userId) throw new Error('Usuario no configurado')
+        if (!userId.value) {
+            navigateTo('/login')
+            return
+        }
         const { error } = await supabase
             .from('match_participants')
-            .insert({ match_id: matchId, user_id: userId })
+            .insert({ match_id: matchId, user_id: userId.value })
         if (error) throw error
     },
     onSuccess: () => {

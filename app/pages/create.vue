@@ -9,6 +9,7 @@ import PublishInputField from '~/components/features/PublishInputField.vue'
 import PublishSubmitBar from '~/components/features/PublishSubmitBar.vue'
 import { usePublishForm } from '~/composables/usePublishForm'
 import { useSupabaseClient } from '~/composables/useSupabaseClient'
+import { useAuth } from '~/composables/useAuth'
 
 const { sportOptions, dateOptions, levelOptions, missingPlayersOptions } = usePublishForm()
 
@@ -23,7 +24,8 @@ const note = ref('')
 
 const supabase = useSupabaseClient()
 const queryClient = useQueryClient()
-const userId = useRuntimeConfig().public.supabaseUserId
+const userId = computed(() => user.value?.id ?? null)
+const { user } = useAuth()
 
 const resolvedDate = computed(() => {
   const base = new Date()
@@ -40,7 +42,10 @@ const totalPlayers = computed(() => (sport.value === 'padel' ? 4 : 8))
 
 const publishMutation = useMutation({
   mutationFn: async () => {
-    if (!userId) throw new Error('Usuario no configurado')
+    if (!userId.value) {
+      navigateTo('/login')
+      return
+    }
 
     const { data, error } = await supabase
       .from('matches')
@@ -55,7 +60,7 @@ const publishMutation = useMutation({
         missing_players: Number(missingPlayers.value),
         total_players: totalPlayers.value,
         status: 'open',
-        created_by: userId
+        created_by: userId.value
       })
       .select('id')
       .single()

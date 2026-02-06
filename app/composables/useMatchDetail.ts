@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import { mapMatchToItem, matchesSeed } from '~/composables/useMatches'
+import { useAuth } from '~/composables/useAuth'
 import { useSupabaseClient } from '~/composables/useSupabaseClient'
 
 export interface MatchDetail {
@@ -23,7 +24,8 @@ export const useMatchDetail = (id: string) => {
   const queryClient = useQueryClient()
   const fallbackMatch = (matchesSeed.find((item) => item.id === id) as MatchDetail) ?? (matchesSeed[0] as MatchDetail)
   const isJoined = ref(false)
-  const userId = useRuntimeConfig().public.supabaseUserId
+  const { user } = useAuth()
+  const userId = computed(() => user.value?.id ?? null)
 
   const query = useQuery({
     queryKey: ['match', id],
@@ -52,12 +54,15 @@ export const useMatchDetail = (id: string) => {
 
   const joinMutation = useMutation({
     mutationFn: async () => {
-      if (!userId) throw new Error('Usuario no configurado')
+      if (!userId.value) {
+        navigateTo('/login')
+        return
+      }
       if (match.value.isFull) return
 
       const { error } = await supabase
         .from('match_participants')
-        .insert({ match_id: match.value.id, user_id: userId })
+        .insert({ match_id: match.value.id, user_id: userId.value })
 
       if (error) throw error
     },
@@ -71,13 +76,16 @@ export const useMatchDetail = (id: string) => {
 
   const leaveMutation = useMutation({
     mutationFn: async () => {
-      if (!userId) throw new Error('Usuario no configurado')
+      if (!userId.value) {
+        navigateTo('/login')
+        return
+      }
 
       const { error } = await supabase
         .from('match_participants')
         .delete()
         .eq('match_id', match.value.id)
-        .eq('user_id', userId)
+        .eq('user_id', userId.value)
 
       if (error) throw error
     },
