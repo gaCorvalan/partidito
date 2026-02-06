@@ -36,6 +36,20 @@ const { user } = useAuth()
 const queryClient = useQueryClient()
 const userId = computed(() => user.value?.id ?? null)
 
+const upcomingExpanded = ref(false)
+const upcomingMatches = computed(() => {
+    const today = new Date()
+    const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+
+    return matches.value.filter((match) => {
+        if (!match.isJoined) return false
+        if (!match.date) return true
+        const dateValue = new Date(match.date)
+        const matchDate = new Date(dateValue.getFullYear(), dateValue.getMonth(), dateValue.getDate())
+        return matchDate >= todayDate
+    })
+})
+
 
 const joinMutation = useMutation({
     mutationFn: async (matchId: string) => {
@@ -93,6 +107,27 @@ const handleFilterChange = (filter: string) => {
         :avatar-url="avatarUrl"
         @filter-change="handleFilterChange"
     />
+    <div v-if="upcomingMatches.length" class="px-4 pt-4">
+        <button
+            class="w-full flex items-center justify-between text-left bg-card border border-border rounded-xl px-4 py-3"
+            type="button"
+            @click="upcomingExpanded = !upcomingExpanded"
+        >
+            <span class="text-sm font-semibold text-foreground">Proximos partidos</span>
+            <Icon
+                :name="upcomingExpanded ? 'lucide:chevron-up' : 'lucide:chevron-down'"
+                class="w-4 h-4 text-muted-foreground"
+            />
+        </button>
+        <div v-if="upcomingExpanded" class="space-y-3 pt-3">
+            <MatchCard
+                v-for="match in upcomingMatches"
+                :key="match.id"
+                :match="match"
+                @open="navigateTo(`/match/${match.id}`)"
+            />
+        </div>
+    </div>
     <div class="space-y-3 p-4">
         <MatchCard
             v-for="match in matches"
