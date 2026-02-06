@@ -50,6 +50,10 @@ const upcomingMatches = computed(() => {
     })
 })
 
+const feedMatches = computed(() => {
+    return matches.value.filter((match) => !match.isJoined)
+})
+
 
 const joinMutation = useMutation({
     mutationFn: async (matchId: string) => {
@@ -108,29 +112,31 @@ const handleFilterChange = (filter: string) => {
         @filter-change="handleFilterChange"
     />
     <div v-if="upcomingMatches.length" class="px-4 pt-4">
-        <button
-            class="w-full flex items-center justify-between text-left bg-card border border-border rounded-xl px-4 py-3"
-            type="button"
-            @click="upcomingExpanded = !upcomingExpanded"
-        >
-            <span class="text-sm font-semibold text-foreground">Proximos partidos</span>
-            <Icon
-                :name="upcomingExpanded ? 'lucide:chevron-up' : 'lucide:chevron-down'"
-                class="w-4 h-4 text-muted-foreground"
-            />
-        </button>
-        <div v-if="upcomingExpanded" class="space-y-3 pt-3">
-            <MatchCard
-                v-for="match in upcomingMatches"
-                :key="match.id"
-                :match="match"
-                @open="navigateTo(`/match/${match.id}`)"
-            />
+        <div class="bg-card border border-border rounded-xl">
+            <button
+                class="w-full flex items-center justify-between text-left px-4 py-3"
+                type="button"
+                @click="upcomingExpanded = !upcomingExpanded"
+            >
+                <span class="text-sm font-semibold text-foreground">Proximos partidos</span>
+                <Icon
+                    :name="upcomingExpanded ? 'lucide:chevron-up' : 'lucide:chevron-down'"
+                    class="w-4 h-4 text-muted-foreground"
+                />
+            </button>
+            <div v-if="upcomingExpanded" class="space-y-3 px-4 pb-4">
+                <MatchCard
+                    v-for="match in upcomingMatches"
+                    :key="match.id"
+                    :match="match"
+                    @open="navigateTo(`/match/${match.id}`)"
+                />
+            </div>
         </div>
     </div>
     <div class="space-y-3 p-4">
         <MatchCard
-            v-for="match in matches"
+            v-for="match in feedMatches"
             :key="match.id"
             :match="match"
             @open="navigateTo(`/match/${match.id}`)"
