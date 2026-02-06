@@ -11,11 +11,14 @@ export interface MatchDetail {
   missingPlayers: number
   price: number
   dateDisplay: string
+  date?: string
+  time?: string
   location: string
   distance: number
   currentPlayers: number
   totalPlayers: number
   isFull: boolean
+  isJoined?: boolean
   players: string[]
 }
 
@@ -23,16 +26,15 @@ export const useMatchDetail = (id: string) => {
   const supabase = useSupabaseClient()
   const queryClient = useQueryClient()
   const fallbackMatch = (matchesSeed.find((item) => item.id === id) as MatchDetail) ?? (matchesSeed[0] as MatchDetail)
-  const isJoined = ref(false)
   const { user } = useAuth()
   const userId = computed(() => user.value?.id ?? null)
 
   const query = useQuery({
-    queryKey: ['match', id],
+    queryKey: ['match', id, userId.value],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('matches')
-        .select('id, sport, level, missing_players, price, date, time, venue, status, total_players, match_participants(count)')
+        .select('id, sport, level, missing_players, price, date, time, venue, status, total_players, match_participants(user_id)')
         .eq('id', id)
         .single()
 
@@ -40,12 +42,13 @@ export const useMatchDetail = (id: string) => {
         throw error
       }
 
-      return mapMatchToItem(data) as MatchDetail
+      return mapMatchToItem(data, userId.value) as MatchDetail
     },
     initialData: fallbackMatch
   })
 
   const match = computed(() => query.data.value ?? fallbackMatch)
+  const isJoined = computed(() => Boolean(match.value.isJoined))
   const error = computed(() => (query.error.value ? String(query.error.value) : null))
 
   const statusLabel = computed(() => {
@@ -65,9 +68,30 @@ export const useMatchDetail = (id: string) => {
         .insert({ match_id: match.value.id, user_id: userId.value })
 
       if (error) throw error
+
+      const userName =
+        user.value?.user_metadata?.full_name ||
+        user.value?.user_metadata?.name ||
+        user.value?.email ||
+        'Usuario'
+
+      await supabase.from('messages').insert({
+        match_id: match.value.id,
+        user_id: userId.value,
+        type: 'system',
+        content: `${userName} se unio al partido`
+      })
+
+      const nextMissing = Math.max(match.value.missingPlayers - 1, 0)
+      await supabase
+        .from('matches')
+        .update({
+          missing_players: nextMissing,
+          status: nextMissing === 0 ? 'full' : 'open'
+        })
+        .eq('id', match.value.id)
     },
     onSuccess: () => {
-      isJoined.value = true
       queryClient.invalidateQueries({ queryKey: ['matches'] })
       queryClient.invalidateQueries({ queryKey: ['match', id] })
       queryClient.invalidateQueries({ queryKey: ['chats'] })
@@ -88,9 +112,30 @@ export const useMatchDetail = (id: string) => {
         .eq('user_id', userId.value)
 
       if (error) throw error
+
+      const userName =
+        user.value?.user_metadata?.full_name ||
+        user.value?.user_metadata?.name ||
+        user.value?.email ||
+        'Usuario'
+
+      await supabase.from('messages').insert({
+        match_id: match.value.id,
+        user_id: userId.value,
+        type: 'system',
+        content: `${userName} salio del partido`
+      })
+
+      const nextMissing = Math.min(match.value.missingPlayers + 1, match.value.totalPlayers)
+      await supabase
+        .from('matches')
+        .update({
+          missing_players: nextMissing,
+          status: 'open'
+        })
+        .eq('id', match.value.id)
     },
     onSuccess: () => {
-      isJoined.value = false
       queryClient.invalidateQueries({ queryKey: ['matches'] })
       queryClient.invalidateQueries({ queryKey: ['match', id] })
       queryClient.invalidateQueries({ queryKey: ['chats'] })

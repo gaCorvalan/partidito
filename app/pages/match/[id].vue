@@ -112,10 +112,16 @@ const handleSend = (message: string) => {
             class="w-full py-3 rounded-lg font-semibold transition-opacity"
             :class="isJoined ? 'bg-muted text-muted-foreground' : 'bg-primary text-primary-foreground hover:opacity-90'"
             type="button"
-            :disabled="joinStatus.isJoining || joinStatus.isLeaving"
+            :disabled="joinStatus.isJoining || joinStatus.isLeaving || (match.isFull && !isJoined)"
             @click="toggleJoin"
           >
-            {{ joinStatus.isJoining ? 'Joining...' : joinStatus.isLeaving ? 'Leaving...' : joinLabel }}
+            {{
+              joinStatus.isJoining
+                ? 'Joining...'
+                : joinStatus.isLeaving
+                  ? 'Leaving...'
+                  : joinLabel
+            }}
           </button>
           <div class="grid grid-cols-2 gap-2">
             <button
