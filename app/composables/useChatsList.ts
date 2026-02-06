@@ -20,22 +20,6 @@ const chatsSeed: ChatListItem[] = [
     lastMessage: 'See you at 7pm!',
     participants: 3
   },
-  {
-    id: 'central-football',
-    title: 'Central Sports Complex',
-    timeAgo: '15 min ago',
-    timeLabel: 'Today 20:30',
-    lastMessage: 'Anyone bringing extra shoes?',
-    participants: 5
-  },
-  {
-    id: 'city-padel',
-    title: 'City Padel Courts',
-    timeAgo: '1 hour ago',
-    timeLabel: 'This week · Wed 17:00',
-    lastMessage: 'Looking forward to playing!',
-    participants: 2
-  }
 ]
 
 type ChatRow = {

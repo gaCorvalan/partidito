@@ -27,38 +27,6 @@ const messagesSeed: Array<ChatMessage & { matchId: string }> = [
     type: 'system',
     text: 'Juan joined the match'
   },
-  {
-    id: 'msg-1',
-    matchId: 'pacheco-padel',
-    type: 'incoming',
-    author: 'Juan',
-    text: 'Hey! Just arrived, parking now',
-    time: '19:05'
-  },
-  {
-    id: 'msg-2',
-    matchId: 'pacheco-padel',
-    type: 'incoming',
-    author: 'Maria',
-    text: "Great, we're setting up",
-    time: '19:07'
-  },
-  {
-    id: 'msg-3',
-    matchId: 'pacheco-padel',
-    type: 'incoming',
-    author: 'Carlos',
-    text: 'See you at 7pm!',
-    time: '19:08'
-  },
-  {
-    id: 'msg-4',
-    matchId: 'pacheco-padel',
-    type: 'outgoing',
-    author: 'You',
-    text: 'Perfect! see you soon',
-    time: '19:10'
-  }
 ]
 
 const formatTime = (value: string) => {

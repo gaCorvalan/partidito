@@ -26,9 +26,9 @@ export interface ProfileData {
 }
 
 const profileSeed: ProfileData = {
-  name: 'Juan Diego',
-  initials: 'JD',
-  location: 'Downtown',
+  name: 'Invitado',
+  initials: 'IV',
+  location: 'Bs As',
   avatarUrl: null
 }
 
