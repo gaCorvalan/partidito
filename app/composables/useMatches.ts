@@ -160,7 +160,7 @@ export const useMatches = () => {
 
       return (data as MatchRow[]).map((row) => mapMatchRow(row, userId.value))
     },
-    initialData: matchesSeed
+    placeholderData: matchesSeed
   })
 
   const matches = computed(() => query.data.value ?? matchesSeed)

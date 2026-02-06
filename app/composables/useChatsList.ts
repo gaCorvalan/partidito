@@ -106,7 +106,7 @@ export const useChatsList = () => {
 
       return (data as ChatRow[]).map(mapChatRow)
     },
-    initialData: chatsSeed
+    placeholderData: chatsSeed
   })
 
   const chats = computed(() => query.data.value ?? chatsSeed)

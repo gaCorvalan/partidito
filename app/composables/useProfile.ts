@@ -89,7 +89,8 @@ export const useProfile = () => {
 
       return data as ProfileRow
     },
-    enabled: computed(() => Boolean(userId.value))
+    enabled: computed(() => Boolean(userId.value)),
+    placeholderData: profileSeed
   })
 
   const profile = computed<ProfileData>(() => {

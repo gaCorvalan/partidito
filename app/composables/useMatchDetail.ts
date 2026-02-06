@@ -44,7 +44,7 @@ export const useMatchDetail = (id: string) => {
 
       return mapMatchToItem(data, userId.value) as MatchDetail
     },
-    initialData: fallbackMatch
+    placeholderData: fallbackMatch
   })
 
   const match = computed(() => query.data.value ?? fallbackMatch)

@@ -109,7 +109,7 @@ export const useChatThread = (matchId: string) => {
 
       return (data as MessageRow[]).map((row) => mapMessageRow(row, currentUserName))
     },
-    initialData: seed
+    placeholderData: seed
   })
 
   const messages = computed(() => query.data.value ?? seed)
