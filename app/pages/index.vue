@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import HomeHeader from '~/components/features/HomeHeader.vue'
 import MatchCard from '~/components/features/MatchCard.vue'
@@ -14,7 +14,23 @@ const filters = [
 
 const activeFilter = ref("all");
 
+const route = useRoute()
 const { matches } = useMatches()
+const avatarUrl = computed(() => user.value?.user_metadata?.picture ?? null)
+const userInitials = computed(() => {
+    const fullName =
+        user.value?.user_metadata?.full_name ||
+        user.value?.user_metadata?.name ||
+        user.value?.email ||
+        ''
+    if (!fullName) return ''
+    return fullName
+        .split(' ')
+        .map((part) => part[0])
+        .slice(0, 2)
+        .join('')
+        .toUpperCase()
+})
 const supabase = useSupabaseClient()
 const { user } = useAuth()
 const queryClient = useQueryClient()
@@ -46,6 +62,8 @@ const handleFilterChange = (filter: string) => {
     <HomeHeader
         :filters="filters"
         :active-filter="activeFilter"
+        :user-initials="userInitials"
+        :avatar-url="avatarUrl"
         @filter-change="handleFilterChange"
     />
     <div class="space-y-3 p-4">

@@ -55,7 +55,7 @@ export const useMatchDetail = (id: string) => {
   const joinMutation = useMutation({
     mutationFn: async () => {
       if (!userId.value) {
-        navigateTo('/login')
+        navigateTo(`/login?returnTo=${encodeURIComponent(useRoute().fullPath)}`)
         return
       }
       if (match.value.isFull) return
@@ -77,7 +77,7 @@ export const useMatchDetail = (id: string) => {
   const leaveMutation = useMutation({
     mutationFn: async () => {
       if (!userId.value) {
-        navigateTo('/login')
+        navigateTo(`/login?returnTo=${encodeURIComponent(useRoute().fullPath)}`)
         return
       }
 

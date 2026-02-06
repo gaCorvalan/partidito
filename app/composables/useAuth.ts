@@ -27,19 +27,17 @@ export const useAuth = () => {
       })
   }
 
-  onMounted(() => {
-    fetchUser()
-    supabase.auth.onAuthStateChange((_event, session) => {
-      user.value = session?.user ?? null
-      syncProfile()
-    })
-  })
+  const signInWithGoogle = async (returnTo?: string) => {
+    if (returnTo) {
+      localStorage.setItem('returnTo', returnTo)
+    }
 
-  const signInWithGoogle = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin
+        redirectTo: returnTo
+          ? `${window.location.origin}/login?returnTo=${encodeURIComponent(returnTo)}`
+          : window.location.origin
       }
     })
 
@@ -51,6 +49,20 @@ export const useAuth = () => {
     if (error) throw error
     user.value = null
   }
+
+  onMounted(() => {
+    fetchUser()
+    supabase.auth.onAuthStateChange((_event, session) => {
+      user.value = session?.user ?? null
+      syncProfile()
+
+      const returnTo = localStorage.getItem('returnTo')
+      if (session?.user && returnTo) {
+        localStorage.removeItem('returnTo')
+        navigateTo(returnTo)
+      }
+    })
+  })
 
   return {
     user,
