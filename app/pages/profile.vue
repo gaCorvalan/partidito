@@ -17,11 +17,19 @@ const handleEdit = () => {
   
     <div class="p-4 space-y-6">
       <div class="flex flex-col items-center space-y-4">
-        <div
-          class="w-20 h-20 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-3xl font-bold"
-        >
+      <div
+        class="w-20 h-20 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-3xl font-bold overflow-hidden"
+      >
+        <img
+          v-if="profile.avatarUrl"
+          :src="profile.avatarUrl"
+          :alt="profile.name"
+          class="w-full h-full object-cover"
+        />
+        <span v-else>
           {{ profile.initials }}
-        </div>
+        </span>
+      </div>
         <h2 class="text-2xl font-bold text-foreground">{{ profile.name }}</h2>
       </div>
   

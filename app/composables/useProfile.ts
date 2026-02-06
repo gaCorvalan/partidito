@@ -1,6 +1,7 @@
 import { computed } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
 import { useSupabaseClient } from '~/composables/useSupabaseClient'
+import { useAuth } from '~/composables/useAuth'
 
 export interface ProfileStat {
   id: string
@@ -21,12 +22,14 @@ export interface ProfileData {
   name: string
   initials: string
   location: string
+  avatarUrl?: string | null
 }
 
 const profileSeed: ProfileData = {
   name: 'Juan Diego',
   initials: 'JD',
-  location: 'Downtown'
+  location: 'Downtown',
+  avatarUrl: null
 }
 
 const statsSeed: ProfileStat[] = [
@@ -68,15 +71,16 @@ type ProfileRow = {
 
 export const useProfile = () => {
   const supabase = useSupabaseClient()
-  const userId = useRuntimeConfig().public.supabaseUserId
+  const { user } = useAuth()
+  const userId = computed(() => user.value?.id ?? null)
 
   const profileQuery = useQuery({
-    queryKey: ['profile', userId],
+    queryKey: ['profile', userId.value],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('profiles')
         .select('full_name, location')
-        .eq('id', userId)
+        .eq('id', userId.value)
         .single()
 
       if (error) {
@@ -85,14 +89,17 @@ export const useProfile = () => {
 
       return data as ProfileRow
     },
-    enabled: Boolean(userId),
-    initialData: profileSeed
+    enabled: computed(() => Boolean(userId.value))
   })
 
   const profile = computed<ProfileData>(() => {
     const value = profileQuery.data.value
+    const avatarUrl = user.value?.user_metadata?.picture ?? null
     if (!value || 'name' in value) {
-      return profileSeed
+      return {
+        ...profileSeed,
+        avatarUrl
+      }
     }
 
     const initials = value.full_name
@@ -105,7 +112,8 @@ export const useProfile = () => {
     return {
       name: value.full_name,
       initials,
-      location: value.location ?? 'Sin zona'
+      location: value.location ?? 'Sin zona',
+      avatarUrl
     }
   })
 
