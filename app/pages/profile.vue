@@ -3,11 +3,18 @@ import ProfileHeader from '~/components/features/ProfileHeader.vue'
 import ProfileStatCard from '~/components/features/ProfileStatCard.vue'
 import ProfileSkillCard from '~/components/features/ProfileSkillCard.vue'
 import { useProfile } from '~/composables/useProfile'
+import { useAuth } from '~/composables/useAuth'
 
 const { profile, stats, skills } = useProfile()
+const { signOut } = useAuth()
 
 const handleEdit = () => {
   // Placeholder para futura edicion de perfil
+}
+
+const handleSignOut = async () => {
+  await signOut()
+  navigateTo('/')
 }
 </script>
 
@@ -68,6 +75,7 @@ const handleEdit = () => {
       <button
         class="w-full py-3 border border-border text-foreground rounded-lg font-semibold hover:bg-muted transition-colors"
         type="button"
+        @click="handleSignOut"
       >
         Sign out
       </button>
