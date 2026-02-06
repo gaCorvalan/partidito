@@ -47,7 +47,7 @@ export const useSearchFilters = () => {
     {
       id: 'distance',
       label: 'Max Distance',
-      selected: 'all',
+      selected: '3',
       options: [
         { label: 'All', value: 'all' },
         { label: '1 km', value: '1' },
