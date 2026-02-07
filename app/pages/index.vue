@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import HomeHeader from '~/components/features/HomeHeader.vue'
 import MatchCard from '~/components/features/MatchCard.vue'
 import { useMatches } from '~/composables/useMatches'
+import { useGeoLocation } from '~/composables/useGeoLocation'
 import { useSupabaseClient } from '~/composables/useSupabaseClient'
 import { useAuth } from '~/composables/useAuth'
 const filters = [
@@ -16,6 +17,7 @@ const activeFilter = ref("all");
 
 const route = useRoute()
 const { matches } = useMatches()
+const { location, status, error, requestLocation, clearLocation } = useGeoLocation()
 const avatarUrl = computed(() => user.value?.user_metadata?.picture ?? null)
 const userInitials = computed(() => {
     const fullName =
@@ -36,6 +38,11 @@ const { user } = useAuth()
 const queryClient = useQueryClient()
 const userId = computed(() => user.value?.id ?? null)
 const isAuthenticated = computed(() => Boolean(user.value))
+
+const locationLabel = computed(() => {
+    if (!location.value) return 'Ubicacion no activada'
+    return location.value.placeName || `${location.value.lat.toFixed(3)}, ${location.value.lng.toFixed(3)}`
+})
 
 const upcomingExpanded = ref(false)
 const didAutoExpand = ref(false)
@@ -126,6 +133,34 @@ const handleFilterChange = (filter: string) => {
         :avatar-url="avatarUrl"
         @filter-change="handleFilterChange"
     />
+    <div class="px-4 pt-4">
+        <div class="bg-card border border-border rounded-xl p-3 flex items-center justify-between gap-3">
+            <div>
+                <p class="text-sm font-semibold text-foreground">Ubicacion</p>
+                <p class="text-xs text-muted-foreground">{{ locationLabel }}</p>
+                <p v-if="status === 'denied'" class="text-xs text-rose-500">Permiso denegado</p>
+                <p v-else-if="error" class="text-xs text-rose-500">{{ error }}</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <button
+                    class="px-3 py-1.5 rounded-full text-xs font-semibold bg-primary text-primary-foreground disabled:opacity-60"
+                    type="button"
+                    :disabled="status === 'loading'"
+                    @click="requestLocation"
+                >
+                    {{ status === 'loading' ? 'Detectando...' : location ? 'Actualizar' : 'Usar mi ubicacion' }}
+                </button>
+                <button
+                    v-if="location"
+                    class="px-3 py-1.5 rounded-full text-xs font-semibold bg-muted text-muted-foreground"
+                    type="button"
+                    @click="clearLocation"
+                >
+                    Quitar
+                </button>
+            </div>
+        </div>
+    </div>
     <div v-if="upcomingMatches.length" class="px-4 pt-4">
         <div class="bg-card border border-border rounded-xl">
             <button
