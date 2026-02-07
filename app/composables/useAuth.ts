@@ -3,6 +3,7 @@ import { useSupabaseClient } from '~/composables/useSupabaseClient'
 
 export const useAuth = () => {
   const supabase = useSupabaseClient()
+  const config = useRuntimeConfig()
 
   const user = useState<Awaited<ReturnType<typeof supabase.auth.getUser>>['data']['user'] | null>(
     'auth-user',
@@ -18,8 +19,8 @@ export const useAuth = () => {
       provider: 'google',
       options: {
         redirectTo: returnTo
-          ? `${window.location.origin}/login?returnTo=${encodeURIComponent(returnTo)}`
-          : window.location.origin
+          ? `${config.public.siteUrl || window.location.origin}/login?returnTo=${encodeURIComponent(returnTo)}`
+          : config.public.siteUrl || window.location.origin
       }
     })
 
