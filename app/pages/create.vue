@@ -110,50 +110,96 @@ const handleSubmit = () => {
   <div class="h-full flex flex-col bg-background">
     <PublishHeader title="Create match" @back="handleBack" />
 
-    <div class="flex-1 overflow-y-auto p-4 space-y-4 pb-24">
-      <PublishSelectField label="Sport" :options="sportOptions" v-model="sport" />
-
-      <PublishOptionGroup
-        label="Missing Players"
-        :options="missingPlayersOptions"
-        v-model="missingPlayers"
-      />
-
-      <div class="flex items-center justify-between rounded-lg border border-border px-3 py-2.5">
-        <div>
-          <p class="text-sm font-semibold text-foreground">Unirme automaticamente</p>
-          <p class="text-xs text-muted-foreground">El creador se suma al partido.</p>
+    <div class="flex-1 overflow-y-auto p-4 space-y-5 pb-28">
+      <div class="bg-card border border-border rounded-2xl p-4 space-y-4">
+        <div class="flex items-center gap-2">
+          <Icon name="lucide:trophy" class="w-4 h-4 text-primary" />
+          <div>
+            <p class="text-sm font-semibold text-foreground">Match setup</p>
+            <p class="text-xs text-muted-foreground">Define el deporte y los cupos.</p>
+          </div>
         </div>
-        <button
-          class="w-11 h-6 rounded-full transition-colors"
-          :class="autoJoin ? 'bg-primary' : 'bg-muted'"
-          type="button"
-          @click="autoJoin = !autoJoin"
-        >
-          <span
-            class="block w-5 h-5 bg-background rounded-full transition-transform"
-            :class="autoJoin ? 'translate-x-5' : 'translate-x-0'"
-          ></span>
-        </button>
+        <PublishSelectField label="Sport" :options="sportOptions" v-model="sport" />
+        <PublishOptionGroup
+          label="Missing Players"
+          :options="missingPlayersOptions"
+          v-model="missingPlayers"
+        />
       </div>
 
-      <PublishSelectField label="Date" :options="dateOptions" v-model="date" />
+      <div class="bg-card border border-border rounded-2xl p-4 space-y-4">
+        <div class="flex items-center gap-2">
+          <Icon name="lucide:calendar" class="w-4 h-4 text-primary" />
+          <div>
+            <p class="text-sm font-semibold text-foreground">Schedule</p>
+            <p class="text-xs text-muted-foreground">Elige fecha y hora.</p>
+          </div>
+        </div>
+        <div class="grid gap-3 sm:grid-cols-2">
+          <PublishSelectField label="Date" :options="dateOptions" v-model="date" />
+          <PublishInputField label="Time" type="time" v-model="time" />
+        </div>
+      </div>
 
-      <PublishInputField label="Time" type="time" v-model="time" />
+      <div class="bg-card border border-border rounded-2xl p-4 space-y-4">
+        <div class="flex items-center gap-2">
+          <Icon name="lucide:map-pin" class="w-4 h-4 text-primary" />
+          <div>
+            <p class="text-sm font-semibold text-foreground">Location</p>
+            <p class="text-xs text-muted-foreground">Indica el lugar del partido.</p>
+          </div>
+        </div>
+        <PublishInputField label="Venue" placeholder="e.g., Central Courts" v-model="venue" />
+      </div>
 
-      <PublishInputField label="Venue" placeholder="e.g., Central Courts" v-model="venue" />
+      <div class="bg-card border border-border rounded-2xl p-4 space-y-4">
+        <div class="flex items-center gap-2">
+          <Icon name="lucide:signal" class="w-4 h-4 text-primary" />
+          <div>
+            <p class="text-sm font-semibold text-foreground">Level & price</p>
+            <p class="text-xs text-muted-foreground">Define el nivel y el costo.</p>
+          </div>
+        </div>
+        <PublishLevelGroup label="Level" :options="levelOptions" v-model="level" />
+        <PublishInputField label="Price per Player (COP)" type="number" v-model="price" />
+      </div>
 
-      <PublishLevelGroup label="Level" :options="levelOptions" v-model="level" />
+      <div class="bg-card border border-border rounded-2xl p-4 space-y-4">
+        <div class="flex items-center gap-2">
+          <Icon name="lucide:sticky-note" class="w-4 h-4 text-primary" />
+          <div>
+            <p class="text-sm font-semibold text-foreground">Notes</p>
+            <p class="text-xs text-muted-foreground">Detalles opcionales para los jugadores.</p>
+          </div>
+        </div>
+        <PublishInputField
+          label="Note (optional)"
+          placeholder="Add any details about the match..."
+          as="textarea"
+          :rows="3"
+          v-model="note"
+        />
+      </div>
 
-      <PublishInputField label="Price per Player (COP)" type="number" v-model="price" />
-
-      <PublishInputField
-        label="Note (optional)"
-        placeholder="Add any details about the match..."
-        as="textarea"
-        :rows="3"
-        v-model="note"
-      />
+      <div class="bg-card border border-border rounded-2xl p-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-semibold text-foreground">Unirme automaticamente</p>
+            <p class="text-xs text-muted-foreground">El creador se suma al partido.</p>
+          </div>
+          <button
+            class="w-11 h-6 rounded-full transition-colors"
+            :class="autoJoin ? 'bg-primary' : 'bg-muted'"
+            type="button"
+            @click="autoJoin = !autoJoin"
+          >
+            <span
+              class="block w-5 h-5 bg-background rounded-full transition-transform"
+              :class="autoJoin ? 'translate-x-5' : 'translate-x-0'"
+            ></span>
+          </button>
+        </div>
+      </div>
     </div>
 
     <PublishSubmitBar label="Publish match" @submit="handleSubmit" />
