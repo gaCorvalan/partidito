@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import HomeHeader from '~/components/features/HomeHeader.vue'
 import MatchCard from '~/components/features/MatchCard.vue'
@@ -38,6 +38,7 @@ const userId = computed(() => user.value?.id ?? null)
 const isAuthenticated = computed(() => Boolean(user.value))
 
 const upcomingExpanded = ref(false)
+const didAutoExpand = ref(false)
 const upcomingMatches = computed(() => {
     if (!isAuthenticated.value) return []
     const today = new Date()
@@ -46,8 +47,8 @@ const upcomingMatches = computed(() => {
     return matches.value.filter((match) => {
         if (!match.isJoined) return false
         if (!match.date) return true
-        const dateValue = new Date(match.date)
-        const matchDate = new Date(dateValue.getFullYear(), dateValue.getMonth(), dateValue.getDate())
+        const [year, month, day] = match.date.split('-').map(Number)
+        const matchDate = new Date(year, month - 1, day)
         return matchDate >= todayDate
     })
 })
@@ -56,6 +57,17 @@ const feedMatches = computed(() => {
     if (!isAuthenticated.value) return matches.value
     return matches.value.filter((match) => !match.isJoined)
 })
+
+watch(
+    () => [upcomingMatches.value.length, feedMatches.value.length, isAuthenticated.value],
+    ([upcomingCount, feedCount, authenticated]) => {
+        if (authenticated && !didAutoExpand.value && upcomingCount > 0 && feedCount === 0) {
+            upcomingExpanded.value = true
+            didAutoExpand.value = true
+        }
+    },
+    { immediate: true }
+)
 
 
 const joinMutation = useMutation({
@@ -145,5 +157,8 @@ const handleFilterChange = (filter: string) => {
             @open="navigateTo(`/match/${match.id}`)"
             @join="joinMutation.mutate(match.id)"
         />
+        <div v-if="!feedMatches.length && !upcomingMatches.length" class="text-center text-sm text-muted-foreground py-8">
+            No hay partidos disponibles por ahora.
+        </div>
     </div>
 </template>
