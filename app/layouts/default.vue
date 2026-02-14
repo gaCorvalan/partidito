@@ -1,12 +1,14 @@
 <template>
-    <div class="flex items-center justify-center min-h-screen bg-background md:items-stretch md:p-0">
+    <div
+        class="flex items-center justify-center min-h-[100svh] min-h-[100dvh] bg-background md:items-stretch md:p-0"
+    >
         <div
-            class="w-full flex flex-col h-screen md:h-screen md:max-w-xl bg-background rounded-3xl overflow-hidden shadow-2xl"
+            class="w-full flex flex-col h-[100svh] h-[100dvh] md:h-[100dvh] md:max-w-xl bg-background rounded-3xl overflow-hidden shadow-2xl"
         >
             <div class="flex-1 overflow-y-auto">
                 <slot />
             </div>
-            <nav class="border-t border-border bg-background">
+            <nav class="border-t border-border bg-background pb-[env(safe-area-inset-bottom)]">
                 <div class="flex justify-around items-center">
                     <button
                         v-for="item in navItems"
