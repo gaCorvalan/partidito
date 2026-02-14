@@ -162,10 +162,9 @@ const handleSelect = (groupId: string, value: string) => {
     </div>
 
     <div v-if="isFiltersOpen" class="fixed inset-0 z-50">
-      <div class="absolute inset-0 bg-black/30" @click="isFiltersOpen = false"></div>
-      <div
-        class="absolute inset-0 bg-background border-border flex flex-col"
-      >
+      <div class="absolute inset-0 bg-transparent" @click="isFiltersOpen = false"></div>
+      <div class="absolute inset-0 flex justify-center">
+        <div class="w-full max-w-xl bg-background border-border flex flex-col">
         <div class="p-4 border-b border-border flex items-center justify-between">
           <div>
             <h2 class="text-lg font-semibold text-foreground">Filtros</h2>
@@ -337,6 +336,7 @@ const handleSelect = (groupId: string, value: string) => {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   </div>
