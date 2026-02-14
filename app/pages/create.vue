@@ -12,11 +12,19 @@ import { useSupabaseClient } from '~/composables/useSupabaseClient'
 import { useAuth } from '~/composables/useAuth'
 
 const route = useRoute()
-const { sportOptions, dateOptions, levelOptions, missingPlayersOptions } = usePublishForm()
+const { sportOptions, levelOptions, missingPlayersOptions } = usePublishForm()
 
 const sport = ref('padel')
 const missingPlayers = ref('1')
-const date = ref('today')
+const toDateInputValue = () => {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+const date = ref(toDateInputValue())
 const time = ref('19:00')
 const venue = ref('')
 const level = ref('intermediate')
@@ -28,17 +36,6 @@ const supabase = useSupabaseClient()
 const queryClient = useQueryClient()
 const userId = computed(() => user.value?.id ?? null)
 const { user } = useAuth()
-
-const resolvedDate = computed(() => {
-  const base = new Date()
-  if (date.value === 'tomorrow') {
-    base.setDate(base.getDate() + 1)
-  }
-  if (date.value === 'week') {
-    base.setDate(base.getDate() + 3)
-  }
-  return base.toISOString().slice(0, 10)
-})
 
 const totalPlayers = computed(() => (sport.value === 'padel' ? 4 : 8))
 
@@ -54,7 +51,7 @@ const publishMutation = useMutation({
       .insert({
         sport: sport.value,
         level: level.value,
-        date: resolvedDate.value,
+        date: date.value,
         time: time.value,
         venue: venue.value || 'Sin lugar',
         price: Number(price.value),
@@ -136,7 +133,7 @@ const handleSubmit = () => {
           </div>
         </div>
         <div class="grid gap-3 sm:grid-cols-2">
-          <PublishSelectField label="Date" :options="dateOptions" v-model="date" />
+          <PublishInputField label="Date" type="date" v-model="date" />
           <PublishInputField label="Time" type="time" v-model="time" />
         </div>
       </div>

@@ -55,6 +55,16 @@ const distanceIndex = computed({
   }
 })
 
+const dateValue = computed({
+  get() {
+    if (!dateGroup.value) return ''
+    return dateGroup.value.selected === 'all' ? '' : dateGroup.value.selected
+  },
+  set(value: string) {
+    handleSelect('date', value || 'all')
+  }
+})
+
 const summaryText = computed(() => {
   const sport = filterValueLabel('sport')
   const date = filterValueLabel('date')
@@ -198,21 +208,12 @@ const handleSelect = (groupId: string, value: string) => {
               <h3 class="text-sm font-semibold text-foreground">Date</h3>
               <span class="text-xs text-muted-foreground">Cuando queres jugar</span>
             </div>
-            <div class="flex items-center gap-2 rounded-full bg-muted p-1">
-              <button
-                v-for="option in dateGroup.options"
-                :key="option.value"
-                class="flex-1 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors"
-                :class="
-                  option.value === dateGroup.selected
-                    ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                "
-                type="button"
-                @click="handleSelect('date', option.value)"
-              >
-                {{ option.label }}
-              </button>
+            <div class="rounded-xl border border-border bg-card px-4 py-3">
+              <input
+                v-model="dateValue"
+                type="date"
+                class="w-full bg-transparent text-sm text-foreground"
+              />
             </div>
           </div>
 

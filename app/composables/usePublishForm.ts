@@ -16,12 +16,6 @@ export const usePublishForm = () => {
     { label: 'Football', value: 'football' }
   ]
 
-  const dateOptions: PublishOption[] = [
-    { label: 'Today', value: 'today' },
-    { label: 'Tomorrow', value: 'tomorrow' },
-    { label: 'This week', value: 'week' }
-  ]
-
   const levelOptions: PublishOption[] = [
     { label: 'beginner', value: 'beginner' },
     { label: 'intermediate', value: 'intermediate' },
@@ -35,7 +29,6 @@ export const usePublishForm = () => {
 
   return {
     sportOptions,
-    dateOptions,
     levelOptions,
     missingPlayersOptions
   }
