@@ -1,62 +1,109 @@
-# agents.md
+# AGENTS.md — Partidito
 
-## Descripción del Producto
-
-Partidito es una aplicación web mobile-first para facilitar que personas encuentren otros jugadores para completar u organizar partidos deportivos (inicialmente pádel y fútbol).
-
-**Objetivo principal:** Permitir que los usuarios encuentren partidos disponibles, se unan rápidamente y publiquen partidos de forma simple.
-
-**Características:** Feed de partidos, búsqueda con filtros, publicación de partidos, detalle del partido, chat interno, perfil de usuario.
-
-**Tecnologías:** Nuxt 3, Tailwind CSS, TypeScript, SSR.
+## 0) Objetivo de estas instrucciones
+Este archivo define cómo trabajar en este repo con Codex/agentes:
+- Priorizar cambios pequeños, verificables y reversibles.
+- No inventar requisitos. Si falta información, preguntar.
+- Proteger consistencia del producto y evitar lógica “extra” no solicitada.
 
 ---
 
-## Reglas de Comportamiento
+## 1) Producto (resumen)
+**Partidito** es una app web mobile-first para encontrar y completar partidos deportivos (inicialmente pádel y fútbol).
 
-- Los agentes siempre deben seguir las reglas.
-- Los agentes siempre deben responder en español.
+**Core del MVP:**
+- Feed/listado de partidos
+- Búsqueda + filtros
+- Publicar partido
+- Detalle de partido
+- Chat interno
+- Perfil de usuario
+
+**Datos:** mockeados/estáticos (sin backend real por ahora).
 
 ---
 
-## Comandos Build, Lint y Test
+## 2) Idioma y estilo de respuesta
+- Responder siempre en español.
+- Si hay incertidumbre: declarar supuestos y proponer preguntas concretas.
 
+---
+
+## 3) Estado actual y restricciones (MUY IMPORTANTE)
+### Restricciones de cambios
+- NO agregar lógica no solicitada explícitamente.
+- NO crear nuevos archivos `.md` sin pedir confirmación.
+- Si una tarea requiere docs/tests nuevos: proponerlos primero (en bullets) y esperar OK.
+
+### Riesgo
+- Evitar “refactors grandes” y cambios masivos.
+- Si un cambio toca rutas SSR/SEO o comportamiento del feed: pedir confirmación antes de cerrar.
+
+---
+
+## 4) Tech stack (fuente de verdad)
+**Framework:** Nuxt (confirmar versión real en package.json/lockfile)
+**UI:** Tailwind
+**Lenguaje:** TypeScript
+**Render:** SSR
+
+> Nota: `nuxt preview` sirve para previsualizar luego de `nuxt build` y `nuxt start` es alias de `preview` (en Nuxt actual). :contentReference[oaicite:2]{index=2}
+
+---
+
+## 5) Comandos (obligatorio usarlos)
 ```bash
-npm run dev           # Start development server (Nuxt 3 SSR)
-npm run build         # Build for production
-npm run generate      # Generate static site (SSG)
-npm run preview       # Preview production build
-npm run lint          # Run ESLint (Nuxt ESLint module)
+pnpm dev           # Dev server
+pnpm build         # Build prod
+pnpm generate      # SSG
+pnpm preview       # Preview prod build
+pnpm lint          # ESLint (Nuxt ESLint)
 ```
 
-**Ejecutar un solo test:** No hay framework de tests configurado.
+### Regla: antes de finalizar un cambio que toca lógica/UX, correr al menos:
+- pnpm lint
+- ESLint en Nuxt (referencia):
 
 ---
 
-## Tecnologías Actuales
+## 6) Estructura del repo (mapa mínimo)
+(Actualizar esta sección cuando el repo crezca)
+- pages/ — rutas y pantallas
+- components/ — componentes UI
+- composables/ — lógica reusable (hooks)
+- server/ — endpoints/SSR server routes (si aplica)
+- assets/ — estilos/recursos
+- public/ — estáticos
 
-**Framework y Core:**
-- Nuxt 4.3.0
-- Vue 3.5.27
-- Vue Router 4.6.4
+### Reglas de arquitectura:
+- Lógica de negocio va a composables/ o a una capa domain/ si aparece.
+- Componentes deben ser “tontos” cuando sea posible: reciben props / emiten eventos.
 
-**Estilos:**
-- Tailwind CSS
-- @nuxtjs/tailwindcss: 6.14.0
+---
 
-**UI y Assets:**
-- @nuxt/icon: 2.2.1
-- @nuxt/image: 2.0.0
-- @nuxt/fonts: 0.13.0
+## 7) Estándar de entrega (para PRs o cambios)
 
-**Quality:**
-- ESLint: ^9.39.2
-- @nuxt/eslint: 1.13.0
+### Siempre incluir:
 
-**Renderizado:** Server-Side Rendering (SSR) para SEO
-**Datos:** Mockeados / estáticos (sin backend real)
+- Qué cambié (1–3 bullets)
+- Cómo probarlo (pasos manuales + comandos)
+- Riesgos/edge cases (1–3 bullets)
+- Qué queda pendiente (si aplica)
 
-Reglas
-- Los agentes no deben crear archivos.md, sin consultarlo antes.
-- Los agentes no deben agregar logica que no haya sido pedida con antelacion
--
+---
+
+## 8) Testing (estado actual + plan)
+
+Actualmente NO hay framework de tests configurado.
+
+Si la tarea agrega lógica importante:
+- Proponer (sin implementar aún) una estrategia mínima de tests.
+
+> Nota: Nuxt recomienda @nuxt/test-utils para unit/e2e en Nuxt.
+
+---
+
+## 9) Skills (cómo deben usarse)
+Si existen skills instaladas, el agente debe:
+- usar skills para tareas repetibles (p. ej. “triage”, “safe PR”, “plan de tests”).
+- Si no encuentra una skill apropiada, actuar normal y proponer crear una.
