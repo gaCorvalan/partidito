@@ -1,14 +1,14 @@
-import { computed, ref } from 'vue'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
+import { computed } from 'vue'
+import { useQuery } from '@tanstack/vue-query'
 import { mapMatchToItem, matchesSeed } from '~/composables/useMatches'
 import { useAuth } from '~/composables/useAuth'
 import { useSupabaseClient } from '~/composables/useSupabaseClient'
 import {
-  deriveMatchStatusFromMissing,
   getMatchStatusLabel,
   isJoinableMatchStatus,
   type MatchStatus
 } from '~/composables/useMatchState'
+import { useMatchParticipation } from '~/composables/useMatchParticipation'
 
 export interface MatchDetail {
   id: string
@@ -31,10 +31,11 @@ export interface MatchDetail {
 
 export const useMatchDetail = (id: string) => {
   const supabase = useSupabaseClient()
-  const queryClient = useQueryClient()
   const fallbackMatch = (matchesSeed.find((item) => item.id === id) as MatchDetail) ?? (matchesSeed[0] as MatchDetail)
+  const { joinMatch, leaveMatch, joinStatus } = useMatchParticipation()
   const { user } = useAuth()
   const userId = computed(() => user.value?.id ?? null)
+  const route = useRoute()
 
   const query = useQuery({
     queryKey: ['match', id, userId.value],
@@ -62,99 +63,13 @@ export const useMatchDetail = (id: string) => {
     return getMatchStatusLabel(match.value.status, match.value.missingPlayers)
   })
 
-  const joinMutation = useMutation({
-    mutationFn: async () => {
-      if (!userId.value) {
-        navigateTo(`/login?returnTo=${encodeURIComponent(useRoute().fullPath)}`)
-        return
-      }
-      if (!isJoinableMatchStatus(match.value.status) || match.value.isFull) return
-
-      const { error } = await supabase
-        .from('match_participants')
-        .insert({ match_id: match.value.id, user_id: userId.value })
-
-      if (error) throw error
-
-      const userName =
-        user.value?.user_metadata?.full_name ||
-        user.value?.user_metadata?.name ||
-        user.value?.email ||
-        'Usuario'
-
-      await supabase.from('messages').insert({
-        match_id: match.value.id,
-        user_id: userId.value,
-        type: 'system',
-        content: `${userName} se unio al partido`
-      })
-
-      const nextMissing = Math.max(match.value.missingPlayers - 1, 0)
-      await supabase
-        .from('matches')
-        .update({
-          missing_players: nextMissing,
-          status: deriveMatchStatusFromMissing(nextMissing, match.value.status)
-        })
-        .eq('id', match.value.id)
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['matches'] })
-      queryClient.invalidateQueries({ queryKey: ['match', id] })
-      queryClient.invalidateQueries({ queryKey: ['chats'] })
-    }
-  })
-
-  const leaveMutation = useMutation({
-    mutationFn: async () => {
-      if (!userId.value) {
-        navigateTo(`/login?returnTo=${encodeURIComponent(useRoute().fullPath)}`)
-        return
-      }
-      if (!isJoinableMatchStatus(match.value.status)) return
-
-      const { error } = await supabase
-        .from('match_participants')
-        .delete()
-        .eq('match_id', match.value.id)
-        .eq('user_id', userId.value)
-
-      if (error) throw error
-
-      const userName =
-        user.value?.user_metadata?.full_name ||
-        user.value?.user_metadata?.name ||
-        user.value?.email ||
-        'Usuario'
-
-      await supabase.from('messages').insert({
-        match_id: match.value.id,
-        user_id: userId.value,
-        type: 'system',
-        content: `${userName} salio del partido`
-      })
-
-      const nextMissing = Math.min(match.value.missingPlayers + 1, match.value.totalPlayers)
-      await supabase
-        .from('matches')
-        .update({
-          missing_players: nextMissing,
-          status: deriveMatchStatusFromMissing(nextMissing, match.value.status)
-        })
-        .eq('id', match.value.id)
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['matches'] })
-      queryClient.invalidateQueries({ queryKey: ['match', id] })
-      queryClient.invalidateQueries({ queryKey: ['chats'] })
-    }
-  })
-
   const toggleJoin = () => {
+    if (!isJoinableMatchStatus(match.value.status)) return
     if (isJoined.value) {
-      leaveMutation.mutate()
+      leaveMatch(match.value.id, route.fullPath)
     } else {
-      joinMutation.mutate()
+      if (match.value.isFull) return
+      joinMatch(match.value.id, route.fullPath)
     }
   }
 
@@ -165,10 +80,7 @@ export const useMatchDetail = (id: string) => {
     isJoined,
     statusLabel,
     toggleJoin,
-    joinStatus: computed(() => ({
-      isJoining: joinMutation.isPending.value,
-      isLeaving: leaveMutation.isPending.value
-    })),
+    joinStatus,
     refresh: query.refetch
   }
 }

@@ -11,6 +11,7 @@ import { usePublishForm } from '~/composables/usePublishForm'
 import { useSupabaseClient } from '~/composables/useSupabaseClient'
 import { useAuth } from '~/composables/useAuth'
 import { deriveMatchStatusFromMissing } from '~/composables/useMatchState'
+import { useMatchParticipation } from '~/composables/useMatchParticipation'
 
 const route = useRoute()
 const { sportOptions, levelOptions, missingPlayersOptions } = usePublishForm()
@@ -37,6 +38,7 @@ const supabase = useSupabaseClient()
 const queryClient = useQueryClient()
 const userId = computed(() => user.value?.id ?? null)
 const { user } = useAuth()
+const { joinMatchAsync } = useMatchParticipation()
 
 const totalPlayers = computed(() => (sport.value === 'padel' ? 4 : 8))
 
@@ -68,22 +70,7 @@ const publishMutation = useMutation({
 
     if (error) throw error
     if (data?.id && autoJoin.value) {
-      await supabase
-        .from('match_participants')
-        .insert({ match_id: data.id, user_id: userId.value })
-
-      const userName =
-        user.value?.user_metadata?.full_name ||
-        user.value?.user_metadata?.name ||
-        user.value?.email ||
-        'Usuario'
-
-      await supabase.from('messages').insert({
-        match_id: data.id,
-        user_id: userId.value,
-        type: 'system',
-        content: `${userName} creo el partido`
-      })
+      await joinMatchAsync(data.id, route.fullPath)
     }
 
     return data

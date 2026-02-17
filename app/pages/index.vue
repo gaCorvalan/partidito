@@ -1,13 +1,11 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import HomeHeader from '~/components/features/HomeHeader.vue'
 import MatchCard from '~/components/features/MatchCard.vue'
 import { useMatches } from '~/composables/useMatches'
 import { useGeoLocation } from '~/composables/useGeoLocation'
-import { useSupabaseClient } from '~/composables/useSupabaseClient'
 import { useAuth } from '~/composables/useAuth'
-import { deriveMatchStatusFromMissing } from '~/composables/useMatchState'
+import { useMatchParticipation } from '~/composables/useMatchParticipation'
 const filters = [
     { label: "All", value: "all" },
     { label: "Padel", value: "padel" },
@@ -34,11 +32,9 @@ const userInitials = computed(() => {
         .join('')
         .toUpperCase()
 })
-const supabase = useSupabaseClient()
 const { user } = useAuth()
-const queryClient = useQueryClient()
-const userId = computed(() => user.value?.id ?? null)
 const isAuthenticated = computed(() => Boolean(user.value))
+const { joinMatch } = useMatchParticipation()
 
 const locationLabel = computed(() => {
     if (!location.value) return 'Ubicacion no activada'
@@ -76,51 +72,6 @@ watch(
     },
     { immediate: true }
 )
-
-
-const joinMutation = useMutation({
-    mutationFn: async (matchId: string) => {
-        if (!userId.value) {
-            navigateTo(`/login?returnTo=${encodeURIComponent(route.fullPath)}`)
-            return
-        }
-        const { error } = await supabase
-            .from('match_participants')
-            .insert({ match_id: matchId, user_id: userId.value })
-        if (error) throw error
-
-        const userName =
-            user.value?.user_metadata?.full_name ||
-            user.value?.user_metadata?.name ||
-            user.value?.email ||
-            'Usuario'
-
-        await supabase.from('messages').insert({
-            match_id: matchId,
-            user_id: userId.value,
-            type: 'system',
-            content: `${userName} se unio al partido`
-        })
-
-        const matchItem = matches.value.find((item) => item.id === matchId)
-        if (matchItem) {
-            const nextMissing = Math.max(matchItem.missingPlayers - 1, 0)
-            await supabase
-                .from('matches')
-                .update({
-                    missing_players: nextMissing,
-                    status: deriveMatchStatusFromMissing(nextMissing, matchItem.status)
-                })
-                .eq('id', matchId)
-        }
-    },
-    onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ['matches'] })
-        queryClient.invalidateQueries({ queryKey: ['chats'] })
-        queryClient.invalidateQueries({ queryKey: ['chat'] })
-    }
-})
-
 const handleFilterChange = (filter: string) => {
     activeFilter.value = filter;
 };
@@ -191,7 +142,7 @@ const handleFilterChange = (filter: string) => {
             :key="match.id"
             :match="match"
             @open="navigateTo(`/match/${match.id}`)"
-            @join="joinMutation.mutate(match.id)"
+            @join="joinMatch(match.id, route.fullPath)"
         />
         <div v-if="!feedMatches.length && !upcomingMatches.length" class="text-center text-sm text-muted-foreground py-8">
             No hay partidos disponibles por ahora.
