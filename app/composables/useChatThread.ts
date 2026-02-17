@@ -1,6 +1,7 @@
 import { computed } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
 import { useSupabaseClient } from '~/composables/useSupabaseClient'
+import { useAuth } from '~/composables/useAuth'
 
 export type ChatMessageType = 'system' | 'incoming' | 'outgoing'
 
@@ -15,6 +16,7 @@ export interface ChatMessage {
 type MessageRow = {
   id: string
   type: 'user' | 'system'
+  user_id: string | null
   content: string
   created_at: string
   profiles?: { full_name: string } | null
@@ -34,7 +36,7 @@ const formatTime = (value: string) => {
   return new Intl.DateTimeFormat('es-AR', { hour: '2-digit', minute: '2-digit' }).format(date)
 }
 
-const mapMessageRow = (row: MessageRow, currentUserName: string): ChatMessage => {
+const mapMessageRow = (row: MessageRow, currentUserId?: string | null): ChatMessage => {
   if (row.type === 'system') {
     return {
       id: row.id,
@@ -44,7 +46,7 @@ const mapMessageRow = (row: MessageRow, currentUserName: string): ChatMessage =>
   }
 
   const author = row.profiles?.full_name ?? 'Usuario'
-  const type = author === currentUserName ? 'outgoing' : 'incoming'
+  const type = row.user_id && currentUserId && row.user_id === currentUserId ? 'outgoing' : 'incoming'
 
   return {
     id: row.id,
@@ -57,17 +59,18 @@ const mapMessageRow = (row: MessageRow, currentUserName: string): ChatMessage =>
 
 export const useChatThread = (matchId: string) => {
   const supabase = useSupabaseClient()
+  const { user } = useAuth()
+  const userId = computed(() => user.value?.id ?? null)
   const title = 'Match Chat'
-  const currentUserName = 'Juan Diego'
 
   const seed = messagesSeed.filter((message) => message.matchId === matchId)
 
   const query = useQuery({
-    queryKey: ['chat', matchId],
+    queryKey: ['chat', matchId, userId.value],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('messages')
-        .select('id, type, content, created_at, profiles(full_name)')
+        .select('id, type, user_id, content, created_at, profiles(full_name)')
         .eq('match_id', matchId)
         .order('created_at', { ascending: true })
 
@@ -75,7 +78,7 @@ export const useChatThread = (matchId: string) => {
         throw error
       }
 
-      return (data as MessageRow[]).map((row) => mapMessageRow(row, currentUserName))
+      return (data as MessageRow[]).map((row) => mapMessageRow(row, userId.value))
     },
     placeholderData: seed
   })

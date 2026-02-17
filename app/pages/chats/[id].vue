@@ -5,18 +5,25 @@ import ChatMessageBubble from '~/components/features/ChatMessageBubble.vue'
 import ChatComposer from '~/components/features/ChatComposer.vue'
 import { useChatThread } from '~/composables/useChatThread'
 import { useAuth } from '~/composables/useAuth'
+import { useMatchDetail } from '~/composables/useMatchDetail'
+import { useChatMessaging } from '~/composables/useChatMessaging'
 
 const route = useRoute()
-const { title, messages } = useChatThread(String(route.params.id))
+const matchId = String(route.params.id)
+const { title, messages } = useChatThread(matchId)
+const { isJoined, permissions } = useMatchDetail(matchId)
+const { sendMessage, error: chatError } = useChatMessaging()
 const { user } = useAuth()
 const isAuthenticated = computed(() => Boolean(user.value))
+const canChat = computed(() => isAuthenticated.value && (isJoined.value || permissions.value.isHost))
 
 const handleBack = () => {
   navigateTo('/chats')
 }
 
-const handleSend = (message: string) => {
-  if (!message.trim()) return
+const handleSend = async (message: string) => {
+  if (!canChat.value) return
+  await sendMessage(matchId, message, route.fullPath)
 }
 </script>
 
@@ -41,6 +48,20 @@ const handleSend = (message: string) => {
           Iniciar sesion
         </button>
       </div>
+      <div
+        v-else-if="!canChat"
+        class="h-full flex flex-col items-center justify-center text-center space-y-3"
+      >
+        <div class="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
+          <Icon name="lucide:lock" class="w-6 h-6" />
+        </div>
+        <div class="space-y-1">
+          <p class="text-sm font-semibold text-foreground">No tienes acceso al chat</p>
+          <p class="text-xs text-muted-foreground">
+            Debes estar unido al partido para participar.
+          </p>
+        </div>
+      </div>
       <div v-else-if="!messages.length" class="h-full flex flex-col items-center justify-center text-center space-y-3">
         <div class="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
           <Icon name="lucide:messages-square" class="w-6 h-6" />
@@ -55,8 +76,11 @@ const handleSend = (message: string) => {
       <div v-else class="space-y-3">
         <ChatMessageBubble v-for="message in messages" :key="message.id" :message="message" />
       </div>
+      <div v-if="chatError" class="mt-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-600">
+        {{ chatError }}
+      </div>
     </div>
 
-    <ChatComposer v-if="isAuthenticated" @send="handleSend" />
+    <ChatComposer v-if="canChat" @send="handleSend" />
   </div>
 </template>

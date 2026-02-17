@@ -4,6 +4,7 @@ import ChatMessageBubble from '~/components/features/ChatMessageBubble.vue'
 import ChatComposer from '~/components/features/ChatComposer.vue'
 import { useChatThread } from '~/composables/useChatThread'
 import { useMatchDetail } from '~/composables/useMatchDetail'
+import { useChatMessaging } from '~/composables/useChatMessaging'
 
 const route = useRoute()
 const activeTab = ref<'info' | 'chat'>('info')
@@ -20,6 +21,7 @@ const {
   joinStatus
 } = useMatchDetail(String(route.params.id))
 const { messages } = useChatThread(String(route.params.id))
+const { sendMessage, error: chatError } = useChatMessaging()
 
 const joinLabel = computed(() => {
   if (isJoined.value && !permissions.value.canLeave) {
@@ -31,6 +33,7 @@ const joinLabel = computed(() => {
 const removableParticipants = computed(() =>
   participants.value.filter((participant) => !participant.isCurrentUser)
 )
+const canChat = computed(() => isJoined.value || permissions.value.isHost)
 
 const handleBack = () => {
   navigateTo('/')
@@ -44,8 +47,9 @@ const handleCancel = () => {
   // Placeholder para cancelar
 }
 
-const handleSend = (message: string) => {
-  if (!message.trim()) return
+const handleSend = async (message: string) => {
+  if (!canChat.value) return
+  await sendMessage(String(route.params.id), message, route.fullPath)
 }
 
 const handleRemoveParticipant = (participantUserId: string) => {
@@ -199,9 +203,15 @@ const handleRemoveParticipant = (participantUserId: string) => {
 
       <div v-else class="h-full flex flex-col">
         <div class="flex-1 overflow-y-auto p-4 space-y-3">
+          <div v-if="!canChat" class="rounded-lg border border-border p-3 text-xs text-muted-foreground">
+            Debes estar unido al partido para participar en el chat.
+          </div>
+          <div v-else-if="chatError" class="rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-600">
+            {{ chatError }}
+          </div>
           <ChatMessageBubble v-for="message in messages" :key="message.id" :message="message" />
         </div>
-        <ChatComposer @send="handleSend" />
+        <ChatComposer v-if="canChat" @send="handleSend" />
       </div>
     </div>
   </div>
