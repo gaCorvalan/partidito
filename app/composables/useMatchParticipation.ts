@@ -40,6 +40,26 @@ export const useMatchParticipation = () => {
     onSuccess: refreshQueries
   })
 
+  const removeMutation = useMutation({
+    mutationFn: async ({
+      matchId,
+      participantUserId,
+      returnTo
+    }: {
+      matchId: string
+      participantUserId: string
+      returnTo: string
+    }) => {
+      if (!ensureAuthenticated(returnTo)) return
+      const { error } = await supabase.rpc('remove_participant', {
+        p_match_id: matchId,
+        p_user_id: participantUserId
+      })
+      if (error) throw error
+    },
+    onSuccess: refreshQueries
+  })
+
   const joinMatch = (matchId: string, returnTo: string) => {
     joinMutation.mutate({ matchId, returnTo })
   }
@@ -54,14 +74,19 @@ export const useMatchParticipation = () => {
   const leaveMatchAsync = (matchId: string, returnTo: string) =>
     leaveMutation.mutateAsync({ matchId, returnTo })
 
+  const removeParticipantAsync = (matchId: string, participantUserId: string, returnTo: string) =>
+    removeMutation.mutateAsync({ matchId, participantUserId, returnTo })
+
   return {
     joinMatch,
     leaveMatch,
     joinMatchAsync,
     leaveMatchAsync,
+    removeParticipantAsync,
     joinStatus: computed(() => ({
       isJoining: joinMutation.isPending.value,
-      isLeaving: leaveMutation.isPending.value
+      isLeaving: leaveMutation.isPending.value,
+      isRemoving: removeMutation.isPending.value
     }))
   }
 }

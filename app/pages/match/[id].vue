@@ -8,10 +8,29 @@ import { useMatchDetail } from '~/composables/useMatchDetail'
 const route = useRoute()
 const activeTab = ref<'info' | 'chat'>('info')
 
-const { match, isJoined, statusLabel, toggleJoin, joinStatus } = useMatchDetail(String(route.params.id))
+const {
+  match,
+  isJoined,
+  participants,
+  permissions,
+  statusLabel,
+  toggleJoin,
+  removeParticipant,
+  actionError,
+  joinStatus
+} = useMatchDetail(String(route.params.id))
 const { messages } = useChatThread(String(route.params.id))
 
-const joinLabel = computed(() => (isJoined.value ? 'Leave match' : 'Join match'))
+const joinLabel = computed(() => {
+  if (isJoined.value && !permissions.value.canLeave) {
+    return 'No puedes salir'
+  }
+  return isJoined.value ? 'Leave match' : 'Join match'
+})
+
+const removableParticipants = computed(() =>
+  participants.value.filter((participant) => !participant.isCurrentUser)
+)
 
 const handleBack = () => {
   navigateTo('/')
@@ -27,6 +46,10 @@ const handleCancel = () => {
 
 const handleSend = (message: string) => {
   if (!message.trim()) return
+}
+
+const handleRemoveParticipant = (participantUserId: string) => {
+  removeParticipant(participantUserId)
 }
 </script>
 
@@ -112,7 +135,12 @@ const handleSend = (message: string) => {
             class="w-full py-3 rounded-lg font-semibold transition-opacity"
             :class="isJoined ? 'bg-muted text-muted-foreground' : 'bg-primary text-primary-foreground hover:opacity-90'"
             type="button"
-            :disabled="joinStatus.isJoining || joinStatus.isLeaving || (match.isFull && !isJoined)"
+            :disabled="
+              joinStatus.isJoining ||
+              joinStatus.isLeaving ||
+              (match.isFull && !isJoined) ||
+              (isJoined && !permissions.canLeave)
+            "
             @click="toggleJoin"
           >
             {{
@@ -123,6 +151,33 @@ const handleSend = (message: string) => {
                   : joinLabel
             }}
           </button>
+          <p v-if="actionError" class="text-xs text-rose-500">{{ actionError }}</p>
+          <p v-if="isJoined && !permissions.canLeave" class="text-xs text-muted-foreground">
+            No puedes salir en la ultima hora. El creador no puede salir del partido.
+          </p>
+
+          <div
+            v-if="permissions.canRemoveParticipants && removableParticipants.length"
+            class="rounded-lg border border-border p-3 space-y-2"
+          >
+            <p class="text-xs font-semibold text-foreground">Gestion de participantes</p>
+            <div
+              v-for="participant in removableParticipants"
+              :key="participant.userId"
+              class="flex items-center justify-between gap-3"
+            >
+              <span class="text-xs text-muted-foreground">{{ participant.label }}</span>
+              <button
+                class="px-2.5 py-1 rounded-md border border-border text-xs font-medium text-destructive hover:bg-destructive/10 transition-colors"
+                type="button"
+                :disabled="joinStatus.isRemoving"
+                @click="handleRemoveParticipant(participant.userId)"
+              >
+                {{ joinStatus.isRemoving ? 'Removiendo...' : 'Remover' }}
+              </button>
+            </div>
+          </div>
+
           <div class="grid grid-cols-2 gap-2">
             <button
               class="py-2 rounded-lg border border-border text-foreground text-sm font-medium hover:bg-muted transition-colors"

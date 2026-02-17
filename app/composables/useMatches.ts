@@ -54,14 +54,21 @@ type MatchRow = {
   venue: string
   status: string
   total_players: number
-  match_participants?: Array<{ user_id: string }>
+  match_participants?: Array<{ user_id: string; status?: string | null }>
 }
 
 const mapMatchRow = (row: MatchRow, currentUserId?: string | null): MatchItem => {
   const participants = row.match_participants ?? []
+  const activeParticipants = participants.filter(
+    (participant) => !participant.status || participant.status === 'joined'
+  )
+  // Cupos y estado del partido se definen por total_players/missing_players.
+  // match_participants solo refleja usuarios registrados en la app.
   const currentPlayers = Math.max(row.total_players - row.missing_players, 0)
   const status = toMatchStatus(row.status, row.missing_players)
-  const isJoined = currentUserId ? participants.some((participant) => participant.user_id === currentUserId) : false
+  const isJoined = currentUserId
+    ? activeParticipants.some((participant) => participant.user_id === currentUserId)
+    : false
   return {
     id: row.id,
     sport: row.sport,
@@ -91,7 +98,9 @@ export const useMatches = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('matches')
-        .select('id, sport, level, missing_players, price, date, time, venue, status, total_players, match_participants(user_id)')
+        .select(
+          'id, sport, level, missing_players, price, date, time, venue, status, total_players, match_participants(user_id,status)'
+        )
         .order('date', { ascending: true })
         .order('time', { ascending: true })
 
