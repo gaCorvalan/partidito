@@ -7,6 +7,7 @@ import { useSearchFilters } from '~/composables/useSearchFilters'
 import { useMatches } from '~/composables/useMatches'
 import { useSupabaseClient } from '~/composables/useSupabaseClient'
 import { useAuth } from '~/composables/useAuth'
+import { deriveMatchStatusFromMissing } from '~/composables/useMatchState'
 
 const route = useRoute()
 const groups = reactive(useSearchFilters().groups)
@@ -106,7 +107,7 @@ const joinMutation = useMutation({
         .from('matches')
         .update({
           missing_players: nextMissing,
-          status: nextMissing === 0 ? 'full' : 'open'
+          status: deriveMatchStatusFromMissing(nextMissing, matchItem.status)
         })
         .eq('id', matchId)
     }

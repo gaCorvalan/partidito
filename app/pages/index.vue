@@ -7,6 +7,7 @@ import { useMatches } from '~/composables/useMatches'
 import { useGeoLocation } from '~/composables/useGeoLocation'
 import { useSupabaseClient } from '~/composables/useSupabaseClient'
 import { useAuth } from '~/composables/useAuth'
+import { deriveMatchStatusFromMissing } from '~/composables/useMatchState'
 const filters = [
     { label: "All", value: "all" },
     { label: "Padel", value: "padel" },
@@ -108,7 +109,7 @@ const joinMutation = useMutation({
                 .from('matches')
                 .update({
                     missing_players: nextMissing,
-                    status: nextMissing === 0 ? 'full' : 'open'
+                    status: deriveMatchStatusFromMissing(nextMissing, matchItem.status)
                 })
                 .eq('id', matchId)
         }

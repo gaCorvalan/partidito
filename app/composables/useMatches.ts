@@ -2,6 +2,7 @@ import { computed } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
 import { useSupabaseClient } from '~/composables/useSupabaseClient'
 import { useAuth } from '~/composables/useAuth'
+import { type MatchStatus, isMatchFull, toMatchStatus } from '~/composables/useMatchState'
 
 export interface MatchItem {
   id: string
@@ -16,6 +17,7 @@ export interface MatchItem {
   distance: number
   currentPlayers: number
   totalPlayers: number
+  status: MatchStatus
   isFull: boolean
   isJoined?: boolean
   players: string[]
@@ -35,6 +37,7 @@ export const matchesSeed: MatchItem[] = [
     distance: 2.3,
     currentPlayers: 3,
     totalPlayers: 4,
+    status: 'open',
     isFull: false,
     players: ['P', 'P', 'P']
   }
@@ -57,6 +60,7 @@ type MatchRow = {
 const mapMatchRow = (row: MatchRow, currentUserId?: string | null): MatchItem => {
   const participants = row.match_participants ?? []
   const currentPlayers = Math.max(row.total_players - row.missing_players, 0)
+  const status = toMatchStatus(row.status, row.missing_players)
   const isJoined = currentUserId ? participants.some((participant) => participant.user_id === currentUserId) : false
   return {
     id: row.id,
@@ -71,7 +75,8 @@ const mapMatchRow = (row: MatchRow, currentUserId?: string | null): MatchItem =>
     distance: 0,
     currentPlayers,
     totalPlayers: row.total_players,
-    isFull: row.status === 'full',
+    status,
+    isFull: isMatchFull(status),
     isJoined,
     players: Array.from({ length: Math.min(currentPlayers, 3) }, () => 'P')
   }

@@ -10,6 +10,7 @@ import PublishSubmitBar from '~/components/features/PublishSubmitBar.vue'
 import { usePublishForm } from '~/composables/usePublishForm'
 import { useSupabaseClient } from '~/composables/useSupabaseClient'
 import { useAuth } from '~/composables/useAuth'
+import { deriveMatchStatusFromMissing } from '~/composables/useMatchState'
 
 const route = useRoute()
 const { sportOptions, levelOptions, missingPlayersOptions } = usePublishForm()
@@ -45,6 +46,7 @@ const publishMutation = useMutation({
       navigateTo(`/login?returnTo=${encodeURIComponent(route.fullPath)}`)
       return
     }
+    const missingPlayersValue = Number(missingPlayers.value)
 
     const { data, error } = await supabase
       .from('matches')
@@ -56,9 +58,9 @@ const publishMutation = useMutation({
         venue: venue.value || 'Sin lugar',
         price: Number(price.value),
         note: note.value || null,
-        missing_players: Number(missingPlayers.value),
+        missing_players: missingPlayersValue,
         total_players: totalPlayers.value,
-        status: 'open',
+        status: deriveMatchStatusFromMissing(missingPlayersValue),
         created_by: userId.value
       })
       .select('id')

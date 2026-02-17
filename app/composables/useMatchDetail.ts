@@ -3,6 +3,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import { mapMatchToItem, matchesSeed } from '~/composables/useMatches'
 import { useAuth } from '~/composables/useAuth'
 import { useSupabaseClient } from '~/composables/useSupabaseClient'
+import {
+  deriveMatchStatusFromMissing,
+  getMatchStatusLabel,
+  isJoinableMatchStatus,
+  type MatchStatus
+} from '~/composables/useMatchState'
 
 export interface MatchDetail {
   id: string
@@ -17,6 +23,7 @@ export interface MatchDetail {
   distance: number
   currentPlayers: number
   totalPlayers: number
+  status: MatchStatus
   isFull: boolean
   isJoined?: boolean
   players: string[]
@@ -52,7 +59,7 @@ export const useMatchDetail = (id: string) => {
   const error = computed(() => (query.error.value ? String(query.error.value) : null))
 
   const statusLabel = computed(() => {
-    return match.value.isFull ? 'Full' : `Missing ${match.value.missingPlayers}`
+    return getMatchStatusLabel(match.value.status, match.value.missingPlayers)
   })
 
   const joinMutation = useMutation({
@@ -61,7 +68,7 @@ export const useMatchDetail = (id: string) => {
         navigateTo(`/login?returnTo=${encodeURIComponent(useRoute().fullPath)}`)
         return
       }
-      if (match.value.isFull) return
+      if (!isJoinableMatchStatus(match.value.status) || match.value.isFull) return
 
       const { error } = await supabase
         .from('match_participants')
@@ -87,7 +94,7 @@ export const useMatchDetail = (id: string) => {
         .from('matches')
         .update({
           missing_players: nextMissing,
-          status: nextMissing === 0 ? 'full' : 'open'
+          status: deriveMatchStatusFromMissing(nextMissing, match.value.status)
         })
         .eq('id', match.value.id)
     },
@@ -104,6 +111,7 @@ export const useMatchDetail = (id: string) => {
         navigateTo(`/login?returnTo=${encodeURIComponent(useRoute().fullPath)}`)
         return
       }
+      if (!isJoinableMatchStatus(match.value.status)) return
 
       const { error } = await supabase
         .from('match_participants')
@@ -131,7 +139,7 @@ export const useMatchDetail = (id: string) => {
         .from('matches')
         .update({
           missing_players: nextMissing,
-          status: 'open'
+          status: deriveMatchStatusFromMissing(nextMissing, match.value.status)
         })
         .eq('id', match.value.id)
     },
