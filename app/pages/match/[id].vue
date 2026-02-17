@@ -18,6 +18,7 @@ const {
   toggleJoin,
   removeParticipant,
   confirmMatchResult,
+  markAttendance,
   actionError,
   joinStatus
 } = useMatchDetail(String(route.params.id))
@@ -64,6 +65,10 @@ const handleConfirmPlayed = () => {
 
 const handleConfirmNotPlayed = () => {
   confirmMatchResult('not_played', closeReason.value)
+}
+
+const handleMarkAttendance = (participantUserId: string, attendanceStatus: 'attended' | 'no_show') => {
+  markAttendance(participantUserId, attendanceStatus)
 }
 </script>
 
@@ -217,6 +222,46 @@ const handleConfirmNotPlayed = () => {
               >
                 {{ joinStatus.isClosing ? 'Guardando...' : 'No se jugo' }}
               </button>
+            </div>
+          </div>
+
+          <div v-if="permissions.canMarkAttendance && participants.length" class="rounded-lg border border-border p-3 space-y-2">
+            <p class="text-xs font-semibold text-foreground">Asistencia interna</p>
+            <div
+              v-for="participant in participants"
+              :key="`attendance-${participant.userId}`"
+              class="flex items-center justify-between gap-3"
+            >
+              <div class="min-w-0">
+                <p class="text-xs text-foreground truncate">{{ participant.label }}</p>
+                <p class="text-[11px] text-muted-foreground">
+                  {{
+                    participant.attendanceStatus === 'attended'
+                      ? 'Asistio'
+                      : participant.attendanceStatus === 'no_show'
+                        ? 'No asistio'
+                        : 'Sin registrar'
+                  }}
+                </p>
+              </div>
+              <div class="flex items-center gap-2">
+                <button
+                  class="px-2.5 py-1 rounded-md border border-border text-xs font-medium text-foreground hover:bg-muted transition-colors"
+                  type="button"
+                  :disabled="joinStatus.isMarkingAttendance"
+                  @click="handleMarkAttendance(participant.userId, 'attended')"
+                >
+                  Asistio
+                </button>
+                <button
+                  class="px-2.5 py-1 rounded-md border border-border text-xs font-medium text-destructive hover:bg-destructive/10 transition-colors"
+                  type="button"
+                  :disabled="joinStatus.isMarkingAttendance"
+                  @click="handleMarkAttendance(participant.userId, 'no_show')"
+                >
+                  Falto
+                </button>
+              </div>
             </div>
           </div>
 

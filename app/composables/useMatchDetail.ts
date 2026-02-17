@@ -31,6 +31,7 @@ export interface MatchDetail {
   participants: Array<{
     userId: string
     status: string
+    attendanceStatus: 'attended' | 'no_show' | null
     isCurrentUser: boolean
     label: string
   }>
@@ -45,7 +46,14 @@ export const useMatchDetail = (id: string) => {
     createdBy: undefined,
     participants: []
   }
-  const { joinMatchAsync, leaveMatchAsync, removeParticipantAsync, closeMatchManualAsync, joinStatus } =
+  const {
+    joinMatchAsync,
+    leaveMatchAsync,
+    removeParticipantAsync,
+    closeMatchManualAsync,
+    markAttendanceAsync,
+    joinStatus
+  } =
     useMatchParticipation()
   const { user } = useAuth()
   const userId = computed(() => user.value?.id ?? null)
@@ -65,7 +73,9 @@ export const useMatchDetail = (id: string) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('matches')
-        .select('id, sport, level, missing_players, price, date, time, venue, status, total_players, created_by, match_participants(user_id,status)')
+        .select(
+          'id, sport, level, missing_players, price, date, time, venue, status, total_players, created_by, match_participants(user_id,status,attendance_status)'
+        )
         .eq('id', id)
         .single()
 
@@ -74,12 +84,17 @@ export const useMatchDetail = (id: string) => {
       }
 
       const mapped = mapMatchToItem(data, userId.value) as MatchDetail
-      const participantRows = (data.match_participants ?? []) as Array<{ user_id: string; status?: string | null }>
+      const participantRows = (data.match_participants ?? []) as Array<{
+        user_id: string
+        status?: string | null
+        attendance_status?: 'attended' | 'no_show' | null
+      }>
       const participants = participantRows
         .filter((participant) => !participant.status || participant.status === 'joined')
         .map((participant) => ({
           userId: participant.user_id,
           status: participant.status ?? 'joined',
+          attendanceStatus: participant.attendance_status ?? null,
           isCurrentUser: participant.user_id === userId.value,
           label: participant.user_id === userId.value ? 'Tu' : `Jugador ${participant.user_id.slice(0, 6)}`
         }))
@@ -123,7 +138,10 @@ export const useMatchDetail = (id: string) => {
     canJoin: isJoinableMatchStatus(match.value.status) && !match.value.isFull,
     canLeave: isJoinableMatchStatus(match.value.status) && isJoined.value && !isHost.value && isBeforeLeaveDeadline.value,
     canRemoveParticipants: isJoinableMatchStatus(match.value.status) && isHost.value && isBeforeLeaveDeadline.value,
-    canConfirmResult: isHost.value && hasStarted.value && match.value.status !== MATCH_STATUS.CANCELLED
+    canConfirmResult: isHost.value && hasStarted.value && match.value.status !== MATCH_STATUS.CANCELLED,
+    canMarkAttendance:
+      isHost.value &&
+      (match.value.status === MATCH_STATUS.PLAYED || match.value.status === MATCH_STATUS.NOT_PLAYED)
   }))
 
   const clearActionError = () => {
@@ -184,6 +202,19 @@ export const useMatchDetail = (id: string) => {
     }
   }
 
+  const markAttendance = async (participantUserId: string, attendanceStatus: 'attended' | 'no_show') => {
+    clearActionError()
+    if (!permissions.value.canMarkAttendance) {
+      actionError.value = 'Solo el creador puede marcar asistencia en partidos cerrados.'
+      return
+    }
+    try {
+      await markAttendanceAsync(match.value.id, participantUserId, attendanceStatus, route.fullPath)
+    } catch (mutationError) {
+      actionError.value = toActionErrorMessage(mutationError)
+    }
+  }
+
   return {
     match,
     isLoading: query.isLoading,
@@ -195,6 +226,7 @@ export const useMatchDetail = (id: string) => {
     toggleJoin,
     removeParticipant,
     confirmMatchResult,
+    markAttendance,
     actionError,
     clearActionError,
     joinStatus,

@@ -83,6 +83,29 @@ export const useMatchParticipation = () => {
     onSuccess: refreshQueries
   })
 
+  const attendanceMutation = useMutation({
+    mutationFn: async ({
+      matchId,
+      participantUserId,
+      attendanceStatus,
+      returnTo
+    }: {
+      matchId: string
+      participantUserId: string
+      attendanceStatus: 'attended' | 'no_show'
+      returnTo: string
+    }) => {
+      if (!ensureAuthenticated(returnTo)) return
+      const { error } = await supabase.rpc('mark_attendance', {
+        p_match_id: matchId,
+        p_user_id: participantUserId,
+        p_attendance_status: attendanceStatus
+      })
+      if (error) throw error
+    },
+    onSuccess: refreshQueries
+  })
+
   const joinMatch = (matchId: string, returnTo: string) => {
     joinMutation.mutate({ matchId, returnTo })
   }
@@ -107,6 +130,13 @@ export const useMatchParticipation = () => {
     returnTo: string
   ) => closeMutation.mutateAsync({ matchId, status, reason, returnTo })
 
+  const markAttendanceAsync = (
+    matchId: string,
+    participantUserId: string,
+    attendanceStatus: 'attended' | 'no_show',
+    returnTo: string
+  ) => attendanceMutation.mutateAsync({ matchId, participantUserId, attendanceStatus, returnTo })
+
   return {
     joinMatch,
     leaveMatch,
@@ -114,11 +144,13 @@ export const useMatchParticipation = () => {
     leaveMatchAsync,
     removeParticipantAsync,
     closeMatchManualAsync,
+    markAttendanceAsync,
     joinStatus: computed(() => ({
       isJoining: joinMutation.isPending.value,
       isLeaving: leaveMutation.isPending.value,
       isRemoving: removeMutation.isPending.value,
-      isClosing: closeMutation.isPending.value
+      isClosing: closeMutation.isPending.value,
+      isMarkingAttendance: attendanceMutation.isPending.value
     }))
   }
 }
