@@ -5,10 +5,13 @@ import ProfileStatCard from '~/components/features/ProfileStatCard.vue'
 import ProfileSkillCard from '~/components/features/ProfileSkillCard.vue'
 import { useProfile } from '~/composables/useProfile'
 import { useAuth } from '~/composables/useAuth'
+import { useMatches } from '~/composables/useMatches'
+import { isTerminalMatchStatus, MATCH_STATUS } from '~/composables/useMatchState'
 
 const { profile, stats, skills } = useProfile()
 const { user, signOut } = useAuth()
 const isAuthenticated = computed(() => Boolean(user.value))
+const { matches } = useMatches()
 
 const handleEdit = () => {
   // Placeholder para futura edicion de perfil
@@ -18,6 +21,20 @@ const handleSignOut = async () => {
   await signOut()
   navigateTo('/')
 }
+
+const closedStatusLabel = {
+  [MATCH_STATUS.PLAYED]: 'Jugado',
+  [MATCH_STATUS.NOT_PLAYED]: 'No jugado',
+  [MATCH_STATUS.CANCELLED]: 'Cancelado'
+} as const
+
+const matchHistory = computed(() => {
+  if (!user.value) return []
+  return matches.value
+    .filter((match) => isTerminalMatchStatus(match.status))
+    .filter((match) => match.isJoined || match.createdBy === user.value?.id)
+    .sort((a, b) => `${b.date ?? ''}${b.time ?? ''}`.localeCompare(`${a.date ?? ''}${a.time ?? ''}`))
+})
 </script>
 
 <template>
@@ -74,6 +91,33 @@ const handleSignOut = async () => {
         <div class="flex items-center gap-2 text-muted-foreground">
           <Icon name="lucide:map-pin" class="w-4 h-4" />
           <span>{{ isAuthenticated ? profile.location : 'Sin zona' }}</span>
+        </div>
+      </div>
+
+      <div :class="!isAuthenticated ? 'opacity-50' : ''">
+        <h3 class="text-lg font-semibold text-foreground mb-3">Historial</h3>
+        <div v-if="!isAuthenticated" class="text-sm text-muted-foreground">
+          Inicia sesion para ver tu historial de partidos.
+        </div>
+        <div v-else-if="!matchHistory.length" class="text-sm text-muted-foreground">
+          Todavia no tienes partidos cerrados.
+        </div>
+        <div v-else class="space-y-2">
+          <button
+            v-for="match in matchHistory"
+            :key="match.id"
+            class="w-full rounded-lg border border-border bg-card p-3 text-left hover:bg-muted transition-colors"
+            type="button"
+            @click="navigateTo(`/match/${match.id}`)"
+          >
+            <div class="flex items-center justify-between gap-2">
+              <p class="text-sm font-semibold text-foreground capitalize">{{ match.sport }} · {{ match.level }}</p>
+              <span class="text-xs text-muted-foreground">
+                {{ closedStatusLabel[match.status as keyof typeof closedStatusLabel] }}
+              </span>
+            </div>
+            <p class="text-xs text-muted-foreground mt-1">{{ match.dateDisplay }} · {{ match.location }}</p>
+          </button>
         </div>
       </div>
 
