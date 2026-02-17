@@ -5,7 +5,9 @@ import { useAuth } from '~/composables/useAuth'
 import { useSupabaseClient } from '~/composables/useSupabaseClient'
 import {
   MATCH_STATUS,
+  getMatchStartDate,
   getMatchStatusLabel,
+  isHistoricalOrClosedMatch,
   isJoinableMatchStatus,
   type MatchStatus
 } from '~/composables/useMatchState'
@@ -60,14 +62,6 @@ export const useMatchDetail = (id: string) => {
   const route = useRoute()
   const actionError = ref<string | null>(null)
 
-  const getStartDate = (date?: string, time?: string) => {
-    if (!date || !time) return null
-    const [year, month, day] = date.split('-').map(Number)
-    const [hour, minute] = time.split(':').map(Number)
-    if (!year || !month || !day || hour === undefined || minute === undefined) return null
-    return new Date(year, month - 1, day, hour, minute, 0, 0)
-  }
-
   const query = useQuery({
     queryKey: ['match', id, userId.value],
     queryFn: async () => {
@@ -117,7 +111,7 @@ export const useMatchDetail = (id: string) => {
   })
 
   const participants = computed(() => match.value.participants ?? [])
-  const startDate = computed(() => getStartDate(match.value.date, match.value.time))
+  const startDate = computed(() => getMatchStartDate(match.value.date, match.value.time))
   const leaveDeadline = computed(() => {
     if (!startDate.value) return null
     const deadline = new Date(startDate.value)
@@ -132,12 +126,34 @@ export const useMatchDetail = (id: string) => {
     if (!startDate.value) return false
     return new Date().getTime() >= startDate.value.getTime()
   })
+  const isHistoricalOrClosed = computed(() =>
+    isHistoricalOrClosedMatch({
+      status: match.value.status,
+      date: match.value.date,
+      time: match.value.time
+    })
+  )
   const isHost = computed(() => Boolean(userId.value && match.value.createdBy === userId.value))
   const permissions = computed(() => ({
     isHost: isHost.value,
-    canJoin: isJoinableMatchStatus(match.value.status) && !match.value.isFull && !hasStarted.value,
-    canLeave: isJoinableMatchStatus(match.value.status) && isJoined.value && !isHost.value && isBeforeLeaveDeadline.value,
-    canRemoveParticipants: isJoinableMatchStatus(match.value.status) && isHost.value && isBeforeLeaveDeadline.value,
+    isHistoricalOrClosed: isHistoricalOrClosed.value,
+    canManageParticipation: !isHistoricalOrClosed.value,
+    canJoin:
+      !isHistoricalOrClosed.value &&
+      isJoinableMatchStatus(match.value.status) &&
+      !match.value.isFull &&
+      !hasStarted.value,
+    canLeave:
+      !isHistoricalOrClosed.value &&
+      isJoinableMatchStatus(match.value.status) &&
+      isJoined.value &&
+      !isHost.value &&
+      isBeforeLeaveDeadline.value,
+    canRemoveParticipants:
+      !isHistoricalOrClosed.value &&
+      isJoinableMatchStatus(match.value.status) &&
+      isHost.value &&
+      isBeforeLeaveDeadline.value,
     canConfirmResult: isHost.value && hasStarted.value && match.value.status !== MATCH_STATUS.CANCELLED,
     canMarkAttendance:
       isHost.value &&
@@ -155,6 +171,10 @@ export const useMatchDetail = (id: string) => {
 
   const toggleJoin = async () => {
     clearActionError()
+    if (isHistoricalOrClosed.value) {
+      actionError.value = 'Este partido ya es historico o cerrado. No puedes modificar tu participacion.'
+      return
+    }
     if (!isJoinableMatchStatus(match.value.status)) return
     if (isJoined.value) {
       if (!permissions.value.canLeave) {

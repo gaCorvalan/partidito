@@ -83,3 +83,12 @@ export const isDiscoverableMatch = (input: {
   if (hasMatchStarted(input.date, input.time)) return false
   return input.status === MATCH_STATUS.OPEN && input.missingPlayers > 0
 }
+
+export const isHistoricalOrClosedMatch = (input: {
+  status: MatchStatus
+  date?: string
+  time?: string
+}) => {
+  if (isTerminalMatchStatus(input.status)) return true
+  return hasMatchStarted(input.date, input.time)
+}

@@ -151,6 +151,7 @@ const handleMarkAttendance = (participantUserId: string, attendanceStatus: 'atte
 
         <div class="space-y-2">
           <button
+            v-if="permissions.canManageParticipation"
             class="w-full py-3 rounded-lg font-semibold transition-opacity"
             :class="isJoined ? 'bg-muted text-muted-foreground' : 'bg-primary text-primary-foreground hover:opacity-90'"
             type="button"
@@ -171,7 +172,7 @@ const handleMarkAttendance = (participantUserId: string, attendanceStatus: 'atte
             }}
           </button>
           <p v-if="actionError" class="text-xs text-rose-500">{{ actionError }}</p>
-          <p v-if="isJoined && !permissions.canLeave" class="text-xs text-muted-foreground">
+          <p v-if="permissions.canManageParticipation && isJoined && !permissions.canLeave" class="text-xs text-muted-foreground">
             No puedes salir en la ultima hora. El creador no puede salir del partido.
           </p>
 
