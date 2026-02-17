@@ -17,6 +17,7 @@ const {
   statusLabel,
   toggleJoin,
   removeParticipant,
+  confirmMatchResult,
   actionError,
   joinStatus
 } = useMatchDetail(String(route.params.id))
@@ -34,6 +35,7 @@ const removableParticipants = computed(() =>
   participants.value.filter((participant) => !participant.isCurrentUser)
 )
 const canChat = computed(() => isJoined.value || permissions.value.isHost)
+const closeReason = ref('')
 
 const handleBack = () => {
   navigateTo('/')
@@ -54,6 +56,14 @@ const handleSend = async (message: string) => {
 
 const handleRemoveParticipant = (participantUserId: string) => {
   removeParticipant(participantUserId)
+}
+
+const handleConfirmPlayed = () => {
+  confirmMatchResult('played', closeReason.value)
+}
+
+const handleConfirmNotPlayed = () => {
+  confirmMatchResult('not_played', closeReason.value)
 }
 </script>
 
@@ -178,6 +188,34 @@ const handleRemoveParticipant = (participantUserId: string) => {
                 @click="handleRemoveParticipant(participant.userId)"
               >
                 {{ joinStatus.isRemoving ? 'Removiendo...' : 'Remover' }}
+              </button>
+            </div>
+          </div>
+
+          <div v-if="permissions.canConfirmResult" class="rounded-lg border border-border p-3 space-y-2">
+            <p class="text-xs font-semibold text-foreground">Confirmar estado del partido</p>
+            <input
+              v-model="closeReason"
+              type="text"
+              placeholder="Motivo opcional"
+              class="w-full rounded-md border border-border bg-input px-3 py-2 text-xs text-foreground"
+            />
+            <div class="grid grid-cols-2 gap-2">
+              <button
+                class="py-2 rounded-lg border border-border text-xs font-semibold text-foreground hover:bg-muted transition-colors"
+                type="button"
+                :disabled="joinStatus.isClosing"
+                @click="handleConfirmPlayed"
+              >
+                {{ joinStatus.isClosing ? 'Guardando...' : 'Se jugo' }}
+              </button>
+              <button
+                class="py-2 rounded-lg border border-border text-xs font-semibold text-destructive hover:bg-destructive/10 transition-colors"
+                type="button"
+                :disabled="joinStatus.isClosing"
+                @click="handleConfirmNotPlayed"
+              >
+                {{ joinStatus.isClosing ? 'Guardando...' : 'No se jugo' }}
               </button>
             </div>
           </div>

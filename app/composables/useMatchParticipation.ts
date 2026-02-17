@@ -60,6 +60,29 @@ export const useMatchParticipation = () => {
     onSuccess: refreshQueries
   })
 
+  const closeMutation = useMutation({
+    mutationFn: async ({
+      matchId,
+      status,
+      reason,
+      returnTo
+    }: {
+      matchId: string
+      status: 'played' | 'not_played'
+      reason?: string
+      returnTo: string
+    }) => {
+      if (!ensureAuthenticated(returnTo)) return
+      const { error } = await supabase.rpc('close_match_manual', {
+        p_match_id: matchId,
+        p_status: status,
+        p_reason: reason?.trim() ? reason.trim() : null
+      })
+      if (error) throw error
+    },
+    onSuccess: refreshQueries
+  })
+
   const joinMatch = (matchId: string, returnTo: string) => {
     joinMutation.mutate({ matchId, returnTo })
   }
@@ -77,16 +100,25 @@ export const useMatchParticipation = () => {
   const removeParticipantAsync = (matchId: string, participantUserId: string, returnTo: string) =>
     removeMutation.mutateAsync({ matchId, participantUserId, returnTo })
 
+  const closeMatchManualAsync = (
+    matchId: string,
+    status: 'played' | 'not_played',
+    reason: string | undefined,
+    returnTo: string
+  ) => closeMutation.mutateAsync({ matchId, status, reason, returnTo })
+
   return {
     joinMatch,
     leaveMatch,
     joinMatchAsync,
     leaveMatchAsync,
     removeParticipantAsync,
+    closeMatchManualAsync,
     joinStatus: computed(() => ({
       isJoining: joinMutation.isPending.value,
       isLeaving: leaveMutation.isPending.value,
-      isRemoving: removeMutation.isPending.value
+      isRemoving: removeMutation.isPending.value,
+      isClosing: closeMutation.isPending.value
     }))
   }
 }

@@ -4,6 +4,7 @@ import { mapMatchToItem, matchesSeed } from '~/composables/useMatches'
 import { useAuth } from '~/composables/useAuth'
 import { useSupabaseClient } from '~/composables/useSupabaseClient'
 import {
+  MATCH_STATUS,
   getMatchStatusLabel,
   isJoinableMatchStatus,
   type MatchStatus
@@ -44,7 +45,8 @@ export const useMatchDetail = (id: string) => {
     createdBy: undefined,
     participants: []
   }
-  const { joinMatchAsync, leaveMatchAsync, removeParticipantAsync, joinStatus } = useMatchParticipation()
+  const { joinMatchAsync, leaveMatchAsync, removeParticipantAsync, closeMatchManualAsync, joinStatus } =
+    useMatchParticipation()
   const { user } = useAuth()
   const userId = computed(() => user.value?.id ?? null)
   const route = useRoute()
@@ -111,12 +113,17 @@ export const useMatchDetail = (id: string) => {
     if (!leaveDeadline.value) return true
     return new Date().getTime() < leaveDeadline.value.getTime()
   })
+  const hasStarted = computed(() => {
+    if (!startDate.value) return false
+    return new Date().getTime() >= startDate.value.getTime()
+  })
   const isHost = computed(() => Boolean(userId.value && match.value.createdBy === userId.value))
   const permissions = computed(() => ({
     isHost: isHost.value,
     canJoin: isJoinableMatchStatus(match.value.status) && !match.value.isFull,
     canLeave: isJoinableMatchStatus(match.value.status) && isJoined.value && !isHost.value && isBeforeLeaveDeadline.value,
-    canRemoveParticipants: isJoinableMatchStatus(match.value.status) && isHost.value && isBeforeLeaveDeadline.value
+    canRemoveParticipants: isJoinableMatchStatus(match.value.status) && isHost.value && isBeforeLeaveDeadline.value,
+    canConfirmResult: isHost.value && hasStarted.value && match.value.status !== MATCH_STATUS.CANCELLED
   }))
 
   const clearActionError = () => {
@@ -164,6 +171,19 @@ export const useMatchDetail = (id: string) => {
     }
   }
 
+  const confirmMatchResult = async (status: 'played' | 'not_played', reason?: string) => {
+    clearActionError()
+    if (!permissions.value.canConfirmResult) {
+      actionError.value = 'Solo el creador puede confirmar el estado final.'
+      return
+    }
+    try {
+      await closeMatchManualAsync(match.value.id, status, reason, route.fullPath)
+    } catch (mutationError) {
+      actionError.value = toActionErrorMessage(mutationError)
+    }
+  }
+
   return {
     match,
     isLoading: query.isLoading,
@@ -174,6 +194,7 @@ export const useMatchDetail = (id: string) => {
     statusLabel,
     toggleJoin,
     removeParticipant,
+    confirmMatchResult,
     actionError,
     clearActionError,
     joinStatus,
