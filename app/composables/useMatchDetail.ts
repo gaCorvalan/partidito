@@ -9,6 +9,7 @@ import {
   getMatchStatusLabel,
   isHistoricalOrClosedMatch,
   isJoinableMatchStatus,
+  isTerminalMatchStatus,
   type MatchStatus
 } from '~/composables/useMatchState'
 import { useMatchParticipation } from '~/composables/useMatchParticipation'
@@ -126,6 +127,7 @@ export const useMatchDetail = (id: string) => {
     if (!startDate.value) return false
     return new Date().getTime() >= startDate.value.getTime()
   })
+  const isFinalStatus = computed(() => isTerminalMatchStatus(match.value.status))
   const isHistoricalOrClosed = computed(() =>
     isHistoricalOrClosedMatch({
       status: match.value.status,
@@ -154,7 +156,7 @@ export const useMatchDetail = (id: string) => {
       isJoinableMatchStatus(match.value.status) &&
       isHost.value &&
       isBeforeLeaveDeadline.value,
-    canConfirmResult: isHost.value && hasStarted.value && match.value.status !== MATCH_STATUS.CANCELLED,
+    canConfirmResult: isHost.value && hasStarted.value && !isFinalStatus.value,
     canMarkAttendance:
       isHost.value &&
       (match.value.status === MATCH_STATUS.PLAYED || match.value.status === MATCH_STATUS.NOT_PLAYED)
@@ -211,6 +213,10 @@ export const useMatchDetail = (id: string) => {
 
   const confirmMatchResult = async (status: 'played' | 'not_played', reason?: string) => {
     clearActionError()
+    if (isFinalStatus.value) {
+      actionError.value = 'El partido ya tiene estado final y no puede confirmarse de nuevo.'
+      return
+    }
     if (!permissions.value.canConfirmResult) {
       actionError.value = 'Solo el creador puede confirmar el estado final.'
       return
