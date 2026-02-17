@@ -135,7 +135,7 @@ export const useMatchDetail = (id: string) => {
   const isHost = computed(() => Boolean(userId.value && match.value.createdBy === userId.value))
   const permissions = computed(() => ({
     isHost: isHost.value,
-    canJoin: isJoinableMatchStatus(match.value.status) && !match.value.isFull,
+    canJoin: isJoinableMatchStatus(match.value.status) && !match.value.isFull && !hasStarted.value,
     canLeave: isJoinableMatchStatus(match.value.status) && isJoined.value && !isHost.value && isBeforeLeaveDeadline.value,
     canRemoveParticipants: isJoinableMatchStatus(match.value.status) && isHost.value && isBeforeLeaveDeadline.value,
     canConfirmResult: isHost.value && hasStarted.value && match.value.status !== MATCH_STATUS.CANCELLED,
@@ -167,7 +167,7 @@ export const useMatchDetail = (id: string) => {
         actionError.value = toActionErrorMessage(mutationError)
       }
     } else {
-      if (match.value.isFull) return
+      if (!permissions.value.canJoin) return
       try {
         await joinMatchAsync(match.value.id, route.fullPath)
       } catch (mutationError) {

@@ -157,7 +157,7 @@ const handleMarkAttendance = (participantUserId: string, attendanceStatus: 'atte
             :disabled="
               joinStatus.isJoining ||
               joinStatus.isLeaving ||
-              (match.isFull && !isJoined) ||
+              (!permissions.canJoin && !isJoined) ||
               (isJoined && !permissions.canLeave)
             "
             @click="toggleJoin"

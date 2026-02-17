@@ -5,6 +5,7 @@ import MatchCard from '~/components/features/MatchCard.vue'
 import { useSearchFilters } from '~/composables/useSearchFilters'
 import { useMatches } from '~/composables/useMatches'
 import { useMatchParticipation } from '~/composables/useMatchParticipation'
+import { isDiscoverableMatch } from '~/composables/useMatchState'
 
 const route = useRoute()
 const groups = reactive(useSearchFilters().groups)
@@ -70,6 +71,17 @@ const summaryText = computed(() => {
   return parts.length ? parts.join(' · ') : 'Todos los partidos'
 })
 
+const discoverableMatches = computed(() =>
+  matches.value.filter((match) =>
+    isDiscoverableMatch({
+      status: match.status,
+      missingPlayers: match.missingPlayers,
+      date: match.date,
+      time: match.time
+    })
+  )
+)
+
 const handleSelect = (groupId: string, value: string) => {
   const group = groups.find((item) => item.id === groupId)
   if (group) {
@@ -102,9 +114,9 @@ const handleSelect = (groupId: string, value: string) => {
 
     <div class="flex-1 overflow-y-auto">
       <div class="space-y-3 p-4">
-        <p class="text-sm text-muted-foreground">{{ matches.length }} matches found</p>
+        <p class="text-sm text-muted-foreground">{{ discoverableMatches.length }} matches found</p>
         <MatchCard
-          v-for="match in matches"
+          v-for="match in discoverableMatches"
           :key="match.id"
           :match="match"
           @open="navigateTo(`/match/${match.id}`)"

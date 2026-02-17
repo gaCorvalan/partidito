@@ -6,6 +6,7 @@ import { useMatches } from '~/composables/useMatches'
 import { useGeoLocation } from '~/composables/useGeoLocation'
 import { useAuth } from '~/composables/useAuth'
 import { useMatchParticipation } from '~/composables/useMatchParticipation'
+import { hasMatchStarted, isDiscoverableMatch, isJoinableMatchStatus } from '~/composables/useMatchState'
 const filters = [
     { label: "All", value: "all" },
     { label: "Padel", value: "padel" },
@@ -45,21 +46,24 @@ const upcomingExpanded = ref(false)
 const didAutoExpand = ref(false)
 const upcomingMatches = computed(() => {
     if (!isAuthenticated.value) return []
-    const today = new Date()
-    const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate())
-
     return matches.value.filter((match) => {
         if (!match.isJoined) return false
-        if (!match.date) return true
-        const [year, month, day] = match.date.split('-').map(Number)
-        const matchDate = new Date(year, month - 1, day)
-        return matchDate >= todayDate
+        if (!isJoinableMatchStatus(match.status)) return false
+        return !hasMatchStarted(match.date, match.time)
     })
 })
 
 const feedMatches = computed(() => {
-    if (!isAuthenticated.value) return matches.value
-    return matches.value.filter((match) => !match.isJoined)
+    const discoverable = matches.value.filter((match) =>
+      isDiscoverableMatch({
+        status: match.status,
+        missingPlayers: match.missingPlayers,
+        date: match.date,
+        time: match.time
+      })
+    )
+    if (!isAuthenticated.value) return discoverable
+    return discoverable.filter((match) => !match.isJoined)
 })
 
 watch(

@@ -58,3 +58,28 @@ export const getMatchStatusLabel = (status: MatchStatus, missingPlayers: number)
   if (status === MATCH_STATUS.FULL) return 'Full'
   return `Missing ${missingPlayers}`
 }
+
+export const getMatchStartDate = (date?: string, time?: string) => {
+  if (!date || !time) return null
+  const [year, month, day] = date.split('-').map(Number)
+  const [hour, minute] = time.split(':').map(Number)
+  if (!year || !month || !day || hour === undefined || minute === undefined) return null
+  return new Date(year, month - 1, day, hour, minute, 0, 0)
+}
+
+export const hasMatchStarted = (date?: string, time?: string) => {
+  const startDate = getMatchStartDate(date, time)
+  if (!startDate) return false
+  return Date.now() >= startDate.getTime()
+}
+
+export const isDiscoverableMatch = (input: {
+  status: MatchStatus
+  missingPlayers: number
+  date?: string
+  time?: string
+}) => {
+  if (isTerminalMatchStatus(input.status)) return false
+  if (hasMatchStarted(input.date, input.time)) return false
+  return input.status === MATCH_STATUS.OPEN && input.missingPlayers > 0
+}
