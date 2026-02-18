@@ -32,6 +32,10 @@ type ChatRow = {
   last_message_at: string | null
 }
 
+type ChatRowWithActivity = ChatRow & {
+  lastActivityAt: string
+}
+
 const formatRelativeTime = (value?: string) => {
   if (!value) return 'Just now'
   const date = new Date(value)
@@ -63,14 +67,21 @@ const formatTimeLabel = (dateValue: string, timeValue: string) => {
 }
 
 const mapChatRow = (row: ChatRow): ChatListItem => {
+  const lastActivityAt = row.last_message_at ?? `${row.date}T${row.time}`
+
   return {
     id: row.match_id,
     title: row.venue,
-    timeAgo: formatRelativeTime(row.last_message_at ?? undefined),
+    timeAgo: formatRelativeTime(lastActivityAt),
     timeLabel: formatTimeLabel(row.date, row.time),
     lastMessage: row.last_message ?? 'Sin mensajes',
     participants: row.participants
   }
+}
+
+const toTimestamp = (value: string) => {
+  const timestamp = new Date(value).getTime()
+  return Number.isNaN(timestamp) ? 0 : timestamp
 }
 
 export const useChatsList = () => {
@@ -88,7 +99,18 @@ export const useChatsList = () => {
         throw error
       }
 
-      return (data as ChatRow[]).map(mapChatRow)
+      const rowsWithActivity = (data as ChatRow[]).map((row) => ({
+        ...row,
+        lastActivityAt: row.last_message_at ?? `${row.date}T${row.time}`
+      })) as ChatRowWithActivity[]
+
+      return rowsWithActivity
+        .sort((a, b) => {
+          const diff = toTimestamp(b.lastActivityAt) - toTimestamp(a.lastActivityAt)
+          if (diff !== 0) return diff
+          return a.match_id.localeCompare(b.match_id)
+        })
+        .map(mapChatRow)
     },
     placeholderData: chatsSeed
   })
