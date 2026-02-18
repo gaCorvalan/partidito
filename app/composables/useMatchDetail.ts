@@ -234,6 +234,11 @@ export const useMatchDetail = (id: string) => {
       actionError.value = 'Solo el creador puede marcar asistencia en partidos cerrados.'
       return
     }
+    const participant = participants.value.find((item) => item.userId === participantUserId)
+    if (participant?.attendanceStatus) {
+      actionError.value = 'La asistencia ya fue registrada y no puede editarse.'
+      return
+    }
     try {
       await markAttendanceAsync(match.value.id, participantUserId, attendanceStatus, route.fullPath)
     } catch (mutationError) {

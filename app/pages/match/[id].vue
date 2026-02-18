@@ -47,6 +47,34 @@ const handleSend = async (message: string) => {
   await sendMessage(String(route.params.id), message, route.fullPath)
 }
 
+const handleShare = async () => {
+  const shareUrl = `${window.location.origin}/match/${route.params.id}`
+  const shareData = {
+    title: 'Partidito',
+    text: `${match.value.sport} · ${match.value.level}`,
+    url: shareUrl
+  }
+
+  try {
+    if (navigator.share) {
+      await navigator.share(shareData)
+      return
+    }
+
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(shareUrl)
+      return
+    }
+
+    throw new Error('No se pudo compartir este partido desde tu dispositivo.')
+  } catch (shareError) {
+    const message = shareError instanceof Error ? shareError.message : String(shareError)
+    if (message !== 'AbortError') {
+      console.error(message)
+    }
+  }
+}
+
 const handleRemoveParticipant = (participantUserId: string) => {
   removeParticipant(participantUserId)
 }
@@ -241,7 +269,7 @@ const handleMarkAttendance = (participantUserId: string, attendanceStatus: 'atte
                 <button
                   class="px-2.5 py-1 rounded-md border border-border text-xs font-medium text-foreground hover:bg-muted transition-colors"
                   type="button"
-                  :disabled="joinStatus.isMarkingAttendance"
+                  :disabled="joinStatus.isMarkingAttendance || Boolean(participant.attendanceStatus)"
                   @click="handleMarkAttendance(participant.userId, 'attended')"
                 >
                   Asistio
@@ -249,7 +277,7 @@ const handleMarkAttendance = (participantUserId: string, attendanceStatus: 'atte
                 <button
                   class="px-2.5 py-1 rounded-md border border-border text-xs font-medium text-destructive hover:bg-destructive/10 transition-colors"
                   type="button"
-                  :disabled="joinStatus.isMarkingAttendance"
+                  :disabled="joinStatus.isMarkingAttendance || Boolean(participant.attendanceStatus)"
                   @click="handleMarkAttendance(participant.userId, 'no_show')"
                 >
                   Falto
