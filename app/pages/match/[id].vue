@@ -42,14 +42,6 @@ const handleBack = () => {
   navigateTo('/')
 }
 
-const handleShare = () => {
-  // Placeholder para compartir
-}
-
-const handleCancel = () => {
-  // Placeholder para cancelar
-}
-
 const handleSend = async (message: string) => {
   if (!canChat.value) return
   await sendMessage(String(route.params.id), message, route.fullPath)
@@ -266,22 +258,6 @@ const handleMarkAttendance = (participantUserId: string, attendanceStatus: 'atte
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-2">
-            <button
-              class="py-2 rounded-lg border border-border text-foreground text-sm font-medium hover:bg-muted transition-colors"
-              type="button"
-              @click="handleShare"
-            >
-              Share
-            </button>
-            <button
-              class="py-2 rounded-lg border border-border text-destructive text-sm font-medium hover:bg-destructive/10 transition-colors"
-              type="button"
-              @click="handleCancel"
-            >
-              Cancel
-            </button>
-          </div>
         </div>
       </div>
 
