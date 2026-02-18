@@ -35,7 +35,8 @@ const joinLabel = computed(() => {
 const removableParticipants = computed(() =>
   participants.value.filter((participant) => !participant.isCurrentUser)
 )
-const canChat = computed(() => isJoined.value || permissions.value.isHost)
+const canViewChat = computed(() => isJoined.value || permissions.value.isHost)
+const canWriteChat = computed(() => canViewChat.value && permissions.value.canWriteChat)
 const closeReason = ref('')
 
 const handleBack = () => {
@@ -43,7 +44,7 @@ const handleBack = () => {
 }
 
 const handleSend = async (message: string) => {
-  if (!canChat.value) return
+  if (!canWriteChat.value) return
   await sendMessage(String(route.params.id), message, route.fullPath)
 }
 
@@ -291,15 +292,18 @@ const handleMarkAttendance = (participantUserId: string, attendanceStatus: 'atte
 
       <div v-else class="h-full flex flex-col">
         <div class="flex-1 overflow-y-auto p-4 space-y-3">
-          <div v-if="!canChat" class="rounded-lg border border-border p-3 text-xs text-muted-foreground">
+          <div v-if="!canViewChat" class="rounded-lg border border-border p-3 text-xs text-muted-foreground">
             Debes estar unido al partido para participar en el chat.
+          </div>
+          <div v-else-if="!canWriteChat" class="rounded-lg border border-border p-3 text-xs text-muted-foreground">
+            Chat cerrado: partido finalizado.
           </div>
           <div v-else-if="chatError" class="rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-600">
             {{ chatError }}
           </div>
           <ChatMessageBubble v-for="message in messages" :key="message.id" :message="message" />
         </div>
-        <ChatComposer v-if="canChat" @send="handleSend" />
+        <ChatComposer v-if="canWriteChat" @send="handleSend" />
       </div>
     </div>
   </div>

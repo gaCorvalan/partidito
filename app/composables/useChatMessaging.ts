@@ -2,6 +2,7 @@ import { computed, ref } from 'vue'
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { useAuth } from '~/composables/useAuth'
 import { useSupabaseClient } from '~/composables/useSupabaseClient'
+import { MATCH_STATUS } from '~/composables/useMatchState'
 
 export const useChatMessaging = () => {
   const supabase = useSupabaseClient()
@@ -15,6 +16,21 @@ export const useChatMessaging = () => {
       if (!userId.value) {
         navigateTo(`/login?returnTo=${encodeURIComponent(returnTo)}`)
         return
+      }
+
+      const { data: matchData, error: matchError } = await supabase
+        .from('matches')
+        .select('status')
+        .eq('id', matchId)
+        .single()
+
+      if (matchError) throw matchError
+      if (
+        matchData.status === MATCH_STATUS.PLAYED ||
+        matchData.status === MATCH_STATUS.NOT_PLAYED ||
+        matchData.status === MATCH_STATUS.CANCELLED
+      ) {
+        throw new Error('Chat cerrado: partido finalizado.')
       }
 
       const { error } = await supabase.from('messages').insert({

@@ -15,14 +15,15 @@ const { isJoined, permissions } = useMatchDetail(matchId)
 const { sendMessage, error: chatError } = useChatMessaging()
 const { user } = useAuth()
 const isAuthenticated = computed(() => Boolean(user.value))
-const canChat = computed(() => isAuthenticated.value && (isJoined.value || permissions.value.isHost))
+const canViewChat = computed(() => isAuthenticated.value && (isJoined.value || permissions.value.isHost))
+const canWriteChat = computed(() => canViewChat.value && permissions.value.canWriteChat)
 
 const handleBack = () => {
   navigateTo('/chats')
 }
 
 const handleSend = async (message: string) => {
-  if (!canChat.value) return
+  if (!canWriteChat.value) return
   await sendMessage(matchId, message, route.fullPath)
 }
 </script>
@@ -49,7 +50,7 @@ const handleSend = async (message: string) => {
         </button>
       </div>
       <div
-        v-else-if="!canChat"
+        v-else-if="!canViewChat"
         class="h-full flex flex-col items-center justify-center text-center space-y-3"
       >
         <div class="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
@@ -59,6 +60,20 @@ const handleSend = async (message: string) => {
           <p class="text-sm font-semibold text-foreground">No tienes acceso al chat</p>
           <p class="text-xs text-muted-foreground">
             Debes estar unido al partido para participar.
+          </p>
+        </div>
+      </div>
+      <div
+        v-else-if="!canWriteChat"
+        class="h-full flex flex-col items-center justify-center text-center space-y-3"
+      >
+        <div class="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
+          <Icon name="lucide:lock" class="w-6 h-6" />
+        </div>
+        <div class="space-y-1">
+          <p class="text-sm font-semibold text-foreground">Chat cerrado</p>
+          <p class="text-xs text-muted-foreground">
+            El partido ya finalizo. Puedes leer el historial, pero no enviar mensajes.
           </p>
         </div>
       </div>
@@ -81,6 +96,6 @@ const handleSend = async (message: string) => {
       </div>
     </div>
 
-    <ChatComposer v-if="canChat" @send="handleSend" />
+    <ChatComposer v-if="canWriteChat" @send="handleSend" />
   </div>
 </template>

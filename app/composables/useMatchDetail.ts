@@ -157,6 +157,7 @@ export const useMatchDetail = (id: string) => {
       isHost.value &&
       isBeforeLeaveDeadline.value,
     canConfirmResult: isHost.value && hasStarted.value && !isFinalStatus.value,
+    canWriteChat: !isFinalStatus.value,
     canMarkAttendance:
       isHost.value &&
       (match.value.status === MATCH_STATUS.PLAYED || match.value.status === MATCH_STATUS.NOT_PLAYED)
