@@ -130,7 +130,13 @@ const publishMutation = useMutation({
       throw new Error('Debes seleccionar un club para publicar el partido.')
     }
 
-    const missingPlayersValue = Number(missingPlayers.value)
+    const selectedMissingPlayers = Number(missingPlayers.value)
+    // Si el creador se une automaticamente, creamos con un faltante extra
+    // para que al ejecutar el auto-join el faltante final coincida con lo elegido.
+    const missingPlayersValue = Math.min(
+      selectedMissingPlayers + (autoJoin.value ? 1 : 0),
+      totalPlayers.value
+    )
     const snapshot = [selectedClub.value.name, selectedClub.value.zone, selectedClub.value.address]
       .filter(Boolean)
       .join(' · ')
