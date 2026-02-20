@@ -21,6 +21,8 @@ export interface MatchItem {
   createdBy?: string
   isFull: boolean
   isJoined?: boolean
+  clubLat?: number | null
+  clubLng?: number | null
   players: string[]
 }
 
@@ -40,6 +42,8 @@ export const matchesSeed: MatchItem[] = [
     totalPlayers: 4,
     status: 'open',
     isFull: false,
+    clubLat: null,
+    clubLng: null,
     players: ['P', 'P', 'P']
   }
 ]
@@ -56,6 +60,7 @@ type MatchRow = {
   status: string
   total_players: number
   created_by?: string
+  clubs?: { name?: string | null; lat?: number | null; lng?: number | null } | null
   match_participants?: Array<{ user_id: string; status?: string | null }>
 }
 
@@ -80,7 +85,7 @@ const mapMatchRow = (row: MatchRow, currentUserId?: string | null): MatchItem =>
     dateDisplay: `${row.date} ${row.time}`,
     date: row.date,
     time: row.time,
-    location: row.venue,
+    location: row.clubs?.name ?? row.venue,
     distance: 0,
     currentPlayers,
     totalPlayers: row.total_players,
@@ -88,6 +93,8 @@ const mapMatchRow = (row: MatchRow, currentUserId?: string | null): MatchItem =>
     createdBy: row.created_by,
     isFull: isMatchFull(status),
     isJoined,
+    clubLat: row.clubs?.lat ?? null,
+    clubLng: row.clubs?.lng ?? null,
     players: Array.from({ length: Math.min(currentPlayers, 3) }, () => 'P')
   }
 }
@@ -102,7 +109,7 @@ export const useMatches = () => {
       const { data, error } = await supabase
         .from('matches')
         .select(
-          'id, sport, level, missing_players, price, date, time, venue, status, total_players, created_by, match_participants(user_id,status)'
+          'id, sport, level, missing_players, price, date, time, venue, status, total_players, created_by, clubs(name,lat,lng), match_participants(user_id,status)'
         )
         .order('date', { ascending: true })
         .order('time', { ascending: true })

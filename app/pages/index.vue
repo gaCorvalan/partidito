@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import HomeHeader from '~/components/features/HomeHeader.vue'
 import MatchCard from '~/components/features/MatchCard.vue'
-import { useMatches } from '~/composables/useMatches'
+import { type MatchItem, useMatches } from '~/composables/useMatches'
 import { useGeoLocation } from '~/composables/useGeoLocation'
 import { useAuth } from '~/composables/useAuth'
 import { useMatchParticipation } from '~/composables/useMatchParticipation'
@@ -53,6 +53,44 @@ const upcomingMatches = computed(() => {
     })
 })
 
+const toStartDate = (match: MatchItem) => {
+    if (!match.date || !match.time) return null
+    const parsed = new Date(`${match.date}T${match.time}`)
+    return Number.isNaN(parsed.getTime()) ? null : parsed
+}
+
+const haversineDistanceKm = (lat1: number, lng1: number, lat2: number, lng2: number) => {
+    const toRadians = (value: number) => (value * Math.PI) / 180
+    const earthRadiusKm = 6371
+    const dLat = toRadians(lat2 - lat1)
+    const dLng = toRadians(lng2 - lng1)
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) * Math.sin(dLng / 2) * Math.sin(dLng / 2)
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+    return earthRadiusKm * c
+}
+
+const getDistanceScore = (distanceKm: number | null) => {
+    if (distanceKm === null) return 0
+    const maxUsefulDistanceKm = 30
+    return Math.max(0, 1 - distanceKm / maxUsefulDistanceKm)
+}
+
+const getTimeScore = (match: MatchItem) => {
+    const startDate = toStartDate(match)
+    if (!startDate) return 0
+    const hoursUntilStart = (startDate.getTime() - Date.now()) / 3600000
+    if (hoursUntilStart <= 0) return 0
+    const horizonHours = 72
+    return Math.max(0, 1 - Math.min(hoursUntilStart, horizonHours) / horizonHours)
+}
+
+const getSlotsScore = (match: MatchItem) => {
+    if (match.totalPlayers <= 0) return 0
+    return match.missingPlayers / match.totalPlayers
+}
+
 const feedMatches = computed(() => {
     const discoverable = matches.value.filter((match) =>
       isDiscoverableMatch({
@@ -62,8 +100,40 @@ const feedMatches = computed(() => {
         time: match.time
       })
     )
-    if (!isAuthenticated.value) return discoverable
-    return discoverable.filter((match) => !match.isJoined)
+    const joinable = isAuthenticated.value
+      ? discoverable.filter((match) => !match.isJoined)
+      : discoverable
+
+    const userLat = location.value?.lat
+    const userLng = location.value?.lng
+    const hasUserLocation = typeof userLat === 'number' && typeof userLng === 'number'
+
+    const enriched = joinable.map((match) => {
+      const hasClubCoordinates = typeof match.clubLat === 'number' && typeof match.clubLng === 'number'
+      const distanceKm =
+        hasUserLocation && hasClubCoordinates
+          ? haversineDistanceKm(userLat as number, userLng as number, match.clubLat as number, match.clubLng as number)
+          : null
+
+      const score = hasUserLocation
+        ? getDistanceScore(distanceKm) * 0.5 + getTimeScore(match) * 0.3 + getSlotsScore(match) * 0.2
+        : getTimeScore(match) * 0.7 + getSlotsScore(match) * 0.3
+
+      return {
+        ...match,
+        distance: distanceKm === null ? match.distance : Number(distanceKm.toFixed(1)),
+        _score: score
+      }
+    })
+
+    return enriched.sort((a, b) => {
+      const scoreDiff = b._score - a._score
+      if (scoreDiff !== 0) return scoreDiff
+
+      const aStart = toStartDate(a)?.getTime() ?? Number.MAX_SAFE_INTEGER
+      const bStart = toStartDate(b)?.getTime() ?? Number.MAX_SAFE_INTEGER
+      return aStart - bStart
+    })
 })
 
 watch(
