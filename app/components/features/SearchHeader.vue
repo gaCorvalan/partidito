@@ -7,9 +7,11 @@
         class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5"
       />
       <input
+        :value="modelValue"
         type="text"
         :placeholder="placeholder"
         class="w-full pl-10 pr-4 py-2.5 bg-input border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm"
+        @input="onInput"
       />
     </div>
   </div>
@@ -19,5 +21,15 @@
 defineProps<{
   title: string
   placeholder: string
+  modelValue?: string
 }>()
+
+const emit = defineEmits<{
+  'update:modelValue': [value: string]
+}>()
+
+const onInput = (event: Event) => {
+  const target = event.target as HTMLInputElement | null
+  emit('update:modelValue', target?.value ?? '')
+}
 </script>

@@ -6,12 +6,15 @@ import { useSearchFilters } from '~/composables/useSearchFilters'
 import { useMatches } from '~/composables/useMatches'
 import { useMatchParticipation } from '~/composables/useMatchParticipation'
 import { isDiscoverableMatch } from '~/composables/useMatchState'
+import { useGeoLocation } from '~/composables/useGeoLocation'
 
 const route = useRoute()
 const groups = reactive(useSearchFilters().groups)
 const { matches } = useMatches()
 const { joinMatch } = useMatchParticipation()
+const { location } = useGeoLocation()
 const isFiltersOpen = ref(false)
+const searchTerm = ref('')
 
 const activeFiltersCount = computed(() => {
   return groups.filter((group) => group.selected !== 'all').length
@@ -64,10 +67,11 @@ const dateValue = computed({
 const summaryText = computed(() => {
   const sport = filterValueLabel('sport')
   const date = filterValueLabel('date')
+  const time = filterValueLabel('time')
   const distance = filterValueLabel('distance')
   const level = filterValueLabel('level')
 
-  const parts = [sport, date, distance, level].filter(Boolean)
+  const parts = [sport, date, time, distance, level].filter(Boolean)
   return parts.length ? parts.join(' · ') : 'Todos los partidos'
 })
 
@@ -82,6 +86,104 @@ const discoverableMatches = computed(() =>
   )
 )
 
+const kmDistanceBetween = (
+  aLat: number,
+  aLng: number,
+  bLat: number,
+  bLng: number
+) => {
+  const toRadians = (value: number) => (value * Math.PI) / 180
+  const earthRadiusKm = 6371
+  const latDiff = toRadians(bLat - aLat)
+  const lngDiff = toRadians(bLng - aLng)
+  const partial =
+    Math.sin(latDiff / 2) * Math.sin(latDiff / 2) +
+    Math.cos(toRadians(aLat)) * Math.cos(toRadians(bLat)) * Math.sin(lngDiff / 2) * Math.sin(lngDiff / 2)
+  const centralAngle = 2 * Math.atan2(Math.sqrt(partial), Math.sqrt(1 - partial))
+  return earthRadiusKm * centralAngle
+}
+
+const normalizedSearchTerm = computed(() => searchTerm.value.trim().toLowerCase())
+
+const selectedDistanceKm = computed(() => {
+  const rawValue = distanceGroup.value?.selected ?? 'all'
+  if (rawValue === 'all') return null
+  const parsed = Number(rawValue)
+  return Number.isFinite(parsed) ? parsed : null
+})
+
+const filteredMatches = computed(() => {
+  const now = new Date()
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const endOfWeek = new Date(startOfToday)
+  endOfWeek.setDate(startOfToday.getDate() + 7)
+
+  const hasUserLocation = typeof location.value?.lat === 'number' && typeof location.value?.lng === 'number'
+  const selectedSport = sportGroup.value?.selected ?? 'all'
+  const selectedLevel = levelGroup.value?.selected ?? 'all'
+  const selectedDate = dateGroup.value?.selected ?? 'all'
+  const selectedTime = timeGroup.value?.selected ?? 'all'
+
+  return discoverableMatches.value
+    .map((match) => {
+      const computedDistance =
+        hasUserLocation && typeof match.clubLat === 'number' && typeof match.clubLng === 'number'
+          ? kmDistanceBetween(location.value!.lat, location.value!.lng, match.clubLat, match.clubLng)
+          : null
+      const displayDistance = computedDistance === null ? match.distance : Number(computedDistance.toFixed(1))
+      return { ...match, distance: displayDistance, computedDistance }
+    })
+    .filter((match) => {
+      if (normalizedSearchTerm.value) {
+        const searchableText = `${match.location} ${match.sport} ${match.level}`.toLowerCase()
+        if (!searchableText.includes(normalizedSearchTerm.value)) return false
+      }
+
+      if (selectedSport !== 'all' && match.sport !== selectedSport) return false
+      if (selectedLevel !== 'all' && match.level !== selectedLevel) return false
+
+      if (selectedDate !== 'all') {
+        const matchDate = match.date ? new Date(`${match.date}T00:00:00`) : null
+        if (!matchDate || Number.isNaN(matchDate.getTime())) return false
+        const matchDay = new Date(matchDate.getFullYear(), matchDate.getMonth(), matchDate.getDate())
+        if (selectedDate === 'today' && matchDay.getTime() !== startOfToday.getTime()) return false
+        if (selectedDate === 'tomorrow') {
+          const tomorrow = new Date(startOfToday)
+          tomorrow.setDate(startOfToday.getDate() + 1)
+          if (matchDay.getTime() !== tomorrow.getTime()) return false
+        }
+        if (selectedDate === 'week' && (matchDay < startOfToday || matchDay >= endOfWeek)) return false
+        if (selectedDate.match(/^\d{4}-\d{2}-\d{2}$/) && match.date !== selectedDate) return false
+      }
+
+      if (selectedTime !== 'all') {
+        const hour = Number((match.time ?? '00:00:00').split(':')[0] ?? '0')
+        if (Number.isNaN(hour)) return false
+        if (selectedTime === 'morning' && (hour < 6 || hour > 11)) return false
+        if (selectedTime === 'afternoon' && (hour < 12 || hour > 18)) return false
+        if (selectedTime === 'evening' && (hour < 19 || hour > 23)) return false
+      }
+
+      if (selectedDistanceKm.value !== null) {
+        if (match.computedDistance === null) return false
+        if (match.computedDistance > selectedDistanceKm.value) return false
+      }
+
+      return true
+    })
+    .sort((a, b) => {
+      const aHasDistance = a.computedDistance !== null
+      const bHasDistance = b.computedDistance !== null
+      if (aHasDistance && bHasDistance && a.computedDistance !== b.computedDistance) {
+        return a.computedDistance - b.computedDistance
+      }
+
+      const aDate = new Date(`${a.date ?? '2100-01-01'}T${a.time ?? '23:59:59'}`).getTime()
+      const bDate = new Date(`${b.date ?? '2100-01-01'}T${b.time ?? '23:59:59'}`).getTime()
+      return aDate - bDate
+    })
+})
+
 const handleSelect = (groupId: string, value: string) => {
   const group = groups.find((item) => item.id === groupId)
   if (group) {
@@ -92,7 +194,11 @@ const handleSelect = (groupId: string, value: string) => {
 
 <template>
   <div class="h-full flex flex-col">
-    <SearchHeader title="Find matches" placeholder="Search by club or area" />
+    <SearchHeader
+      v-model="searchTerm"
+      title="Find matches"
+      placeholder="Search by club or area"
+    />
 
     <div class="bg-background border-b border-border px-4 py-3">
       <button
@@ -114,9 +220,9 @@ const handleSelect = (groupId: string, value: string) => {
 
     <div class="flex-1 overflow-y-auto">
       <div class="space-y-3 p-4">
-        <p class="text-sm text-muted-foreground">{{ discoverableMatches.length }} matches found</p>
+        <p class="text-sm text-muted-foreground">{{ filteredMatches.length }} matches found</p>
         <MatchCard
-          v-for="match in discoverableMatches"
+          v-for="match in filteredMatches"
           :key="match.id"
           :match="match"
           @open="navigateTo(`/match/${match.id}`)"
