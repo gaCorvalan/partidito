@@ -38,6 +38,9 @@ const removableParticipants = computed(() =>
 const canViewChat = computed(() => isJoined.value || permissions.value.isHost)
 const canWriteChat = computed(() => canViewChat.value && permissions.value.canWriteChat)
 const closeReason = ref('')
+const locationMeta = computed(() =>
+  [match.value.clubZone, match.value.clubAddress, match.value.clubCity].filter(Boolean).join(' · ')
+)
 
 const handleBack = () => {
   navigateTo('/')
@@ -167,6 +170,28 @@ const handleMarkAttendance = (participantUserId: string, attendanceStatus: 'atte
               </div>
               <span class="text-sm text-muted-foreground">{{ match.currentPlayers }}/{{ match.totalPlayers }}</span>
             </div>
+          </div>
+        </div>
+
+        <div class="bg-card border border-border rounded-2xl p-4 space-y-3">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Ubicacion</p>
+              <p class="text-sm font-semibold text-foreground truncate">
+                {{ match.clubName || match.location || 'Sin lugar definido' }}
+              </p>
+              <p v-if="locationMeta" class="text-xs text-muted-foreground mt-1 truncate">{{ locationMeta }}</p>
+            </div>
+            <a
+              v-if="match.clubMapsUrl"
+              :href="match.clubMapsUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-1 rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-muted transition-colors"
+            >
+              <Icon name="lucide:navigation" class="w-3.5 h-3.5" />
+              <span>Abrir</span>
+            </a>
           </div>
         </div>
 

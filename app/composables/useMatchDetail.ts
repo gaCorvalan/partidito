@@ -31,6 +31,11 @@ export interface MatchDetail {
   createdBy?: string
   isFull: boolean
   isJoined?: boolean
+  clubName?: string
+  clubAddress?: string
+  clubZone?: string
+  clubCity?: string
+  clubMapsUrl?: string
   participants: Array<{
     userId: string
     status: string
@@ -69,7 +74,7 @@ export const useMatchDetail = (id: string) => {
       const { data, error } = await supabase
         .from('matches')
         .select(
-          'id, sport, level, missing_players, price, date, time, venue, status, total_players, created_by, match_participants(user_id,status,attendance_status)'
+          'id, sport, level, missing_players, price, date, time, venue, venue_snapshot, status, total_players, created_by, club_id, clubs(name,address,zone,city,lat,lng,google_maps_url), match_participants(user_id,status,attendance_status)'
         )
         .eq('id', id)
         .single()
@@ -94,9 +99,42 @@ export const useMatchDetail = (id: string) => {
           label: participant.user_id === userId.value ? 'Tu' : `Jugador ${participant.user_id.slice(0, 6)}`
         }))
 
+      const clubRow = data.clubs as
+        | {
+            name?: string | null
+            address?: string | null
+            zone?: string | null
+            city?: string | null
+            lat?: number | null
+            lng?: number | null
+            google_maps_url?: string | null
+          }
+        | null
+
+      const buildGoogleMapsUrl = () => {
+        if (clubRow?.google_maps_url) return clubRow.google_maps_url
+        if (clubRow?.lat !== null && clubRow?.lat !== undefined && clubRow?.lng !== null && clubRow?.lng !== undefined) {
+          return `https://www.google.com/maps/search/?api=1&query=${clubRow.lat},${clubRow.lng}`
+        }
+
+        const query = [clubRow?.name, clubRow?.address, clubRow?.zone, clubRow?.city]
+          .filter(Boolean)
+          .join(', ')
+        if (!query) return null
+        return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`
+      }
+
+      const fallbackVenue = (data.venue_snapshot as string | null) ?? (data.venue as string | null) ?? mapped.location
+
       return {
         ...mapped,
+        location: clubRow?.name ?? fallbackVenue ?? mapped.location,
         createdBy: data.created_by as string,
+        clubName: clubRow?.name ?? null,
+        clubAddress: clubRow?.address ?? null,
+        clubZone: clubRow?.zone ?? null,
+        clubCity: clubRow?.city ?? null,
+        clubMapsUrl: buildGoogleMapsUrl(),
         participants
       }
     },
