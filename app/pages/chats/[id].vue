@@ -92,7 +92,7 @@ const handleSend = async (message: string) => {
       <div v-else class="space-y-3">
         <ChatMessageBubble v-for="message in messages" :key="message.id" :message="message" />
       </div>
-      <div v-if="chatError" class="mt-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-600">
+      <div v-if="chatError" class="mt-3 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
         {{ chatError }}
       </div>
     </div>

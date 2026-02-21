@@ -11,7 +11,7 @@
             'inline-block px-2 py-1 rounded-full text-xs font-medium',
             match.isFull
               ? 'bg-muted text-muted-foreground'
-              : 'bg-green-100 text-green-700'
+              : 'bg-success/15 text-success'
           ]"
         >
           {{ match.isFull ? t('match.status.full') : t('match.status.missing', { count: match.missingPlayers }) }}

@@ -311,7 +311,7 @@ const handleSubmit = () => {
         </div>
       </div>
 
-      <p v-if="submitError" class="text-xs text-rose-500">{{ submitError }}</p>
+      <p v-if="submitError" class="text-xs text-destructive">{{ submitError }}</p>
     </div>
 
     <PublishSubmitBar :label="t('create.submit')" @submit="handleSubmit" />
@@ -364,7 +364,7 @@ const handleSubmit = () => {
             <div v-for="index in 6" :key="index" class="h-16 rounded-xl bg-muted animate-pulse" />
           </div>
 
-          <div v-else-if="clubsQuery.error.value" class="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-600">
+          <div v-else-if="clubsQuery.error.value" class="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
             {{ t('create.club.loadError') }}
           </div>
 

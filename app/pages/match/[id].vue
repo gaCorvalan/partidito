@@ -140,7 +140,7 @@ const handleMarkAttendance = (participantUserId: string, attendanceStatus: 'atte
               <h3 class="font-semibold text-sm text-foreground capitalize">{{ match.sport }} · {{ match.level }}</h3>
               <span
                 class="inline-block px-2 py-1 rounded-full text-xs font-medium"
-                :class="match.isFull ? 'bg-muted text-muted-foreground' : 'bg-green-100 text-green-700'"
+                :class="match.isFull ? 'bg-muted text-muted-foreground' : 'bg-success/15 text-success'"
               >
                 {{ statusLabel }}
               </span>
@@ -218,7 +218,7 @@ const handleMarkAttendance = (participantUserId: string, attendanceStatus: 'atte
                   : joinLabel
             }}
           </button>
-          <p v-if="actionError" class="text-xs text-rose-500">{{ actionError }}</p>
+          <p v-if="actionError" class="text-xs text-destructive">{{ actionError }}</p>
           <p v-if="permissions.canManageParticipation && isJoined && !permissions.canLeave" class="text-xs text-muted-foreground">
             {{ t('match.leaveRestriction') }}
           </p>
@@ -324,7 +324,7 @@ const handleMarkAttendance = (participantUserId: string, attendanceStatus: 'atte
           <div v-else-if="!canWriteChat" class="rounded-lg border border-border p-3 text-xs text-muted-foreground">
             {{ t('match.chat.closed') }}
           </div>
-          <div v-else-if="chatError" class="rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-600">
+          <div v-else-if="chatError" class="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
             {{ chatError }}
           </div>
           <ChatMessageBubble v-for="message in messages" :key="message.id" :message="message" />

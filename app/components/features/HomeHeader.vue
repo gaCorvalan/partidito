@@ -15,33 +15,12 @@
         <Icon v-else name="lucide:user" class="w-4 h-4" />
       </div>
     </div>
-    <div class="flex gap-2 overflow-x-auto pb-2">
-      <button
-        v-for="filter in filters"
-        :key="filter.value"
-        @click="$emit('filter-change', filter.value)"
-        :class="[
-          'px-4 py-2 rounded-full whitespace-nowrap font-medium text-sm transition-colors',
-          activeFilter === filter.value
-            ? 'bg-primary text-primary-foreground'
-            : 'bg-muted text-muted-foreground hover:bg-secondary'
-        ]"
-      >
-        {{ filter.label }}
-      </button>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 defineProps<{
-  filters: Array<{ label: string; value: string }>
-  activeFilter: string
   userInitials?: string
   avatarUrl?: string | null
-}>()
-
-defineEmits<{
-  'filter-change': [value: string]
 }>()
 </script>

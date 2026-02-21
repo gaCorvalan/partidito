@@ -19,6 +19,12 @@ module.exports = {
         "accent-foreground": "oklch(var(--accent-foreground) / <alpha-value>)",
         destructive: "oklch(var(--destructive) / <alpha-value>)",
         "destructive-foreground": "oklch(var(--destructive-foreground) / <alpha-value>)",
+        success: "oklch(var(--success) / <alpha-value>)",
+        "success-foreground": "oklch(var(--success-foreground) / <alpha-value>)",
+        warning: "oklch(var(--warning) / <alpha-value>)",
+        "warning-foreground": "oklch(var(--warning-foreground) / <alpha-value>)",
+        info: "oklch(var(--info) / <alpha-value>)",
+        "info-foreground": "oklch(var(--info-foreground) / <alpha-value>)",
         border: "oklch(var(--border) / <alpha-value>)",
         input: "oklch(var(--input) / <alpha-value>)",
         ring: "oklch(var(--ring) / <alpha-value>)"

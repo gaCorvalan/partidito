@@ -8,13 +8,6 @@ import { useAuth } from '~/composables/useAuth'
 import { useMatchParticipation } from '~/composables/useMatchParticipation'
 import { hasMatchStarted, isDiscoverableMatch, isJoinableMatchStatus } from '~/composables/useMatchState'
 const { t } = useI18n()
-const filters = [
-    { label: t("home.filter.all"), value: "all" },
-    { label: t("home.filter.padel"), value: "padel" },
-    { label: t("home.filter.football"), value: "football" },
-];
-
-const activeFilter = ref("all");
 
 const route = useRoute()
 const { matches } = useMatches()
@@ -147,26 +140,20 @@ watch(
     },
     { immediate: true }
 )
-const handleFilterChange = (filter: string) => {
-    activeFilter.value = filter;
-};
 </script>
 
 <template>
     <HomeHeader
-        :filters="filters"
-        :active-filter="activeFilter"
         :user-initials="userInitials"
         :avatar-url="avatarUrl"
-        @filter-change="handleFilterChange"
     />
     <div class="px-4 pt-4">
         <div class="bg-card border border-border rounded-xl p-3 flex items-center justify-between gap-3">
             <div>
                 <p class="text-sm font-semibold text-foreground">{{ t('profile.location') }}</p>
                 <p class="text-xs text-muted-foreground">{{ locationLabel }}</p>
-                <p v-if="status === 'denied'" class="text-xs text-rose-500">{{ t('home.location.permissionDenied') }}</p>
-                <p v-else-if="error" class="text-xs text-rose-500">{{ error }}</p>
+                <p v-if="status === 'denied'" class="text-xs text-destructive">{{ t('home.location.permissionDenied') }}</p>
+                <p v-else-if="error" class="text-xs text-destructive">{{ error }}</p>
             </div>
             <div class="flex items-center gap-2">
                 <button

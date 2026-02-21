@@ -375,7 +375,7 @@ const handleSelect = (groupId: string, value: string) => {
                       class="h-2 w-2 rounded-full"
                       :class="
                         option.value === 'beginner'
-                          ? 'bg-emerald-400'
+                          ? 'bg-success'
                           : option.value === levelGroup.selected
                             ? 'bg-primary-foreground/70'
                             : 'bg-muted group-hover:bg-foreground/30'
@@ -385,7 +385,7 @@ const handleSelect = (groupId: string, value: string) => {
                       class="h-2 w-2 rounded-full"
                       :class="
                         option.value === 'intermediate'
-                          ? 'bg-amber-400'
+                          ? 'bg-warning'
                           : option.value === levelGroup.selected
                             ? 'bg-primary-foreground/70'
                             : 'bg-muted group-hover:bg-foreground/30'
@@ -395,7 +395,7 @@ const handleSelect = (groupId: string, value: string) => {
                       class="h-2 w-2 rounded-full"
                       :class="
                         option.value === 'advanced'
-                          ? 'bg-rose-400'
+                          ? 'bg-destructive'
                           : option.value === levelGroup.selected
                             ? 'bg-primary-foreground/70'
                             : 'bg-muted group-hover:bg-foreground/30'
