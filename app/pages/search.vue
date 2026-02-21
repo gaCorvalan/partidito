@@ -8,6 +8,7 @@ import { useMatchParticipation } from '~/composables/useMatchParticipation'
 import { isDiscoverableMatch } from '~/composables/useMatchState'
 import { useGeoLocation } from '~/composables/useGeoLocation'
 
+const { t } = useI18n()
 const route = useRoute()
 const groups = reactive(useSearchFilters().groups)
 const { matches } = useMatches()
@@ -72,7 +73,7 @@ const summaryText = computed(() => {
   const level = filterValueLabel('level')
 
   const parts = [sport, date, time, distance, level].filter(Boolean)
-  return parts.length ? parts.join(' · ') : 'Todos los partidos'
+  return parts.length ? parts.join(' · ') : t('search.summary.all')
 })
 
 const discoverableMatches = computed(() =>
@@ -196,8 +197,8 @@ const handleSelect = (groupId: string, value: string) => {
   <div class="h-full flex flex-col">
     <SearchHeader
       v-model="searchTerm"
-      title="Find matches"
-      placeholder="Search by club or area"
+      :title="t('search.title')"
+      :placeholder="t('search.placeholder')"
     />
 
     <div class="bg-background border-b border-border px-4 py-3">
@@ -207,12 +208,12 @@ const handleSelect = (groupId: string, value: string) => {
         @click="isFiltersOpen = true"
       >
         <div class="min-w-0">
-          <p class="text-xs text-muted-foreground">Filtros activos</p>
+          <p class="text-xs text-muted-foreground">{{ t('search.activeFilters') }}</p>
           <p class="text-sm font-semibold text-foreground truncate">{{ summaryText }}</p>
         </div>
         <div class="flex items-center gap-2 text-primary">
           <Icon name="lucide:sliders-horizontal" class="w-4 h-4" />
-          <span class="text-xs font-semibold">Editar</span>
+          <span class="text-xs font-semibold">{{ t('common.edit') }}</span>
           <span v-if="activeFiltersCount" class="text-xs">({{ activeFiltersCount }})</span>
         </div>
       </button>
@@ -220,7 +221,7 @@ const handleSelect = (groupId: string, value: string) => {
 
     <div class="flex-1 overflow-y-auto">
       <div class="space-y-3 p-4">
-        <p class="text-sm text-muted-foreground">{{ filteredMatches.length }} matches found</p>
+        <p class="text-sm text-muted-foreground">{{ t('search.count', { count: filteredMatches.length }) }}</p>
         <MatchCard
           v-for="match in filteredMatches"
           :key="match.id"
@@ -237,22 +238,22 @@ const handleSelect = (groupId: string, value: string) => {
         <div class="w-full max-w-xl bg-background border-border flex flex-col">
         <div class="p-4 border-b border-border flex items-center justify-between">
           <div>
-            <h2 class="text-lg font-semibold text-foreground">Filtros</h2>
-            <p class="text-xs text-muted-foreground">Personaliza tu busqueda</p>
+            <h2 class="text-lg font-semibold text-foreground">{{ t('search.sheet.title') }}</h2>
+            <p class="text-xs text-muted-foreground">{{ t('search.sheet.subtitle') }}</p>
           </div>
           <button
             class="text-sm font-medium text-muted-foreground"
             type="button"
             @click="isFiltersOpen = false"
           >
-            Done
+            {{ t('common.done') }}
           </button>
         </div>
         <div class="flex-1 overflow-y-auto p-4 space-y-6">
           <div v-if="sportGroup" class="space-y-3">
             <div class="flex items-center justify-between">
-              <h3 class="text-sm font-semibold text-foreground">Sport</h3>
-              <span class="text-xs text-muted-foreground">Elegi un deporte</span>
+              <h3 class="text-sm font-semibold text-foreground">{{ t('search.group.sport') }}</h3>
+              <span class="text-xs text-muted-foreground">{{ t('search.hint.sport') }}</span>
             </div>
             <div class="grid grid-cols-3 gap-2">
               <button
@@ -274,8 +275,8 @@ const handleSelect = (groupId: string, value: string) => {
 
           <div v-if="dateGroup" class="space-y-3">
             <div class="flex items-center justify-between">
-              <h3 class="text-sm font-semibold text-foreground">Date</h3>
-              <span class="text-xs text-muted-foreground">Cuando queres jugar</span>
+              <h3 class="text-sm font-semibold text-foreground">{{ t('search.group.date') }}</h3>
+              <span class="text-xs text-muted-foreground">{{ t('search.hint.date') }}</span>
             </div>
             <div class="rounded-xl border border-border bg-card px-4 py-3">
               <input
@@ -288,8 +289,8 @@ const handleSelect = (groupId: string, value: string) => {
 
           <div v-if="timeGroup" class="space-y-3">
             <div class="flex items-center justify-between">
-              <h3 class="text-sm font-semibold text-foreground">Time</h3>
-              <span class="text-xs text-muted-foreground">Franja horaria</span>
+              <h3 class="text-sm font-semibold text-foreground">{{ t('search.group.time') }}</h3>
+              <span class="text-xs text-muted-foreground">{{ t('search.hint.time') }}</span>
             </div>
             <div class="flex flex-wrap gap-2">
               <button
@@ -311,8 +312,8 @@ const handleSelect = (groupId: string, value: string) => {
 
           <div v-if="distanceGroup" class="space-y-3">
             <div class="flex items-center justify-between">
-              <h3 class="text-sm font-semibold text-foreground">Distance</h3>
-              <span class="text-xs text-muted-foreground">Maximo en km</span>
+              <h3 class="text-sm font-semibold text-foreground">{{ t('search.group.distance') }}</h3>
+              <span class="text-xs text-muted-foreground">{{ t('search.hint.distance') }}</span>
             </div>
             <div class="space-y-3">
               <input
@@ -331,8 +332,8 @@ const handleSelect = (groupId: string, value: string) => {
 
           <div v-if="levelGroup" class="space-y-3">
             <div class="flex items-center justify-between">
-              <h3 class="text-sm font-semibold text-foreground">Level</h3>
-              <span class="text-xs text-muted-foreground">Nivel de juego</span>
+              <h3 class="text-sm font-semibold text-foreground">{{ t('search.group.level') }}</h3>
+              <span class="text-xs text-muted-foreground">{{ t('search.hint.level') }}</span>
             </div>
             <div class="space-y-2">
               <button
@@ -360,12 +361,12 @@ const handleSelect = (groupId: string, value: string) => {
                     >
                       {{
                         option.value === 'beginner'
-                          ? 'Nivel inicial'
+                          ? t('search.level.beginner')
                           : option.value === 'intermediate'
-                            ? 'Juego constante'
+                            ? t('search.level.intermediate')
                             : option.value === 'advanced'
-                              ? 'Competitivo'
-                              : 'Todos los niveles'
+                              ? t('search.level.advanced')
+                              : t('search.level.all')
                       }}
                     </p>
                   </div>

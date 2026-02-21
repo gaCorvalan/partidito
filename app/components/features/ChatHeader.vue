@@ -5,13 +5,15 @@
       type="button"
       @click="$emit('back')"
     >
-      ← Back
+      ← {{ t('chat.back') }}
     </button>
     <h2 class="text-lg font-semibold text-foreground">{{ title }}</h2>
   </div>
 </template>
 
 <script setup lang="ts">
+const { t } = useI18n()
+
 defineProps<{
   title: string
 }>()

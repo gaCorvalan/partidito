@@ -33,7 +33,7 @@ export const matchesSeed: MatchItem[] = [
     level: 'intermediate',
     missingPlayers: 1,
     price: 2500,
-    dateDisplay: 'Today 19:00',
+    dateDisplay: 'Hoy 19:00',
     date: '2026-02-06',
     time: '19:00',
     location: 'Pacheco Padel Center',

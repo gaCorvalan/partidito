@@ -8,6 +8,7 @@ import { useAuth } from '~/composables/useAuth'
 import { useMatches } from '~/composables/useMatches'
 import { isTerminalMatchStatus, MATCH_STATUS } from '~/composables/useMatchState'
 
+const { t } = useI18n()
 const { profile, stats, skills } = useProfile()
 const { user, signOut } = useAuth()
 const isAuthenticated = computed(() => Boolean(user.value))
@@ -23,9 +24,9 @@ const handleSignOut = async () => {
 }
 
 const closedStatusLabel = {
-  [MATCH_STATUS.PLAYED]: 'Jugado',
-  [MATCH_STATUS.NOT_PLAYED]: 'No jugado',
-  [MATCH_STATUS.CANCELLED]: 'Cancelado'
+  [MATCH_STATUS.PLAYED]: t('match.status.played'),
+  [MATCH_STATUS.NOT_PLAYED]: t('match.status.notPlayed'),
+  [MATCH_STATUS.CANCELLED]: t('match.status.cancelled')
 } as const
 
 const matchHistory = computed(() => {
@@ -39,7 +40,7 @@ const matchHistory = computed(() => {
 
 <template>
   <div>
-    <ProfileHeader title="Profile" @edit="handleEdit" />
+    <ProfileHeader :title="t('profile.title')" @edit="handleEdit" />
   
     <div class="p-4 space-y-6">
       <div class="flex flex-col items-center space-y-4">
@@ -58,7 +59,7 @@ const matchHistory = computed(() => {
         </span>
       </div>
         <h2 class="text-2xl font-bold text-foreground">
-          {{ isAuthenticated ? profile.name : 'Invitado' }}
+          {{ isAuthenticated ? profile.name : t('profile.guest') }}
         </h2>
       </div>
   
@@ -74,7 +75,7 @@ const matchHistory = computed(() => {
       </div>
   
       <div :class="!isAuthenticated ? 'opacity-50' : ''">
-        <h3 class="text-lg font-semibold text-foreground mb-3">Skills</h3>
+        <h3 class="text-lg font-semibold text-foreground mb-3">{{ t('profile.skills') }}</h3>
         <div class="space-y-3">
           <ProfileSkillCard
             v-for="skill in skills"
@@ -87,20 +88,20 @@ const matchHistory = computed(() => {
       </div>
   
       <div :class="!isAuthenticated ? 'opacity-50' : ''">
-        <label class="block text-sm font-semibold text-foreground mb-2">Location</label>
+        <label class="block text-sm font-semibold text-foreground mb-2">{{ t('profile.location') }}</label>
         <div class="flex items-center gap-2 text-muted-foreground">
           <Icon name="lucide:map-pin" class="w-4 h-4" />
-          <span>{{ isAuthenticated ? profile.location : 'Sin zona' }}</span>
+          <span>{{ isAuthenticated ? profile.location : t('profile.noZone') }}</span>
         </div>
       </div>
 
       <div :class="!isAuthenticated ? 'opacity-50' : ''">
-        <h3 class="text-lg font-semibold text-foreground mb-3">Historial</h3>
+        <h3 class="text-lg font-semibold text-foreground mb-3">{{ t('profile.history') }}</h3>
         <div v-if="!isAuthenticated" class="text-sm text-muted-foreground">
-          Inicia sesion para ver tu historial de partidos.
+          {{ t('profile.history.signIn') }}
         </div>
         <div v-else-if="!matchHistory.length" class="text-sm text-muted-foreground">
-          Todavia no tienes partidos cerrados.
+          {{ t('profile.history.empty') }}
         </div>
         <div v-else class="space-y-2">
           <button
@@ -127,7 +128,7 @@ const matchHistory = computed(() => {
         type="button"
         @click="handleSignOut"
       >
-        Sign out
+        {{ t('profile.signOut') }}
       </button>
       <button
         v-else
@@ -135,7 +136,7 @@ const matchHistory = computed(() => {
         type="button"
         @click="navigateTo(`/login?returnTo=${encodeURIComponent('/profile')}`)"
       >
-        Inicia sesion para personalizar tu perfil
+        {{ t('profile.signInCta') }}
       </button>
     </div>
   </div>

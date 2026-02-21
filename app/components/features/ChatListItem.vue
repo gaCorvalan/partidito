@@ -15,12 +15,14 @@
     <p class="text-sm text-muted-foreground truncate">{{ lastMessage }}</p>
     <div class="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
       <Icon name="lucide:message-square" class="w-3.5 h-3.5" />
-      <span>{{ participants }} in chat</span>
+      <span>{{ t('chat.participants', { count: participants }) }}</span>
     </div>
   </button>
 </template>
 
 <script setup lang="ts">
+const { t } = useI18n()
+
 defineProps<{
   id: string
   title: string

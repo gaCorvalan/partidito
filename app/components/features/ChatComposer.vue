@@ -5,12 +5,13 @@
         v-model="message"
         type="text"
         @keydown.enter.prevent="handleSend"
-        placeholder="Type a message..."
+        :placeholder="t('chat.input.placeholder')"
         class="flex-1 px-4 py-2.5 bg-input border border-border rounded-full focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm"
       />
       <button
         class="p-2.5 bg-primary text-primary-foreground rounded-full hover:opacity-90 transition-opacity"
         type="button"
+        :aria-label="t('chat.input.sendAria')"
         :disabled="!message.trim()"
         @click="handleSend"
       >
@@ -25,6 +26,7 @@
 </template>
 
 <script setup lang="ts">
+const { t } = useI18n()
 const message = ref('')
 
 const emit = defineEmits<{

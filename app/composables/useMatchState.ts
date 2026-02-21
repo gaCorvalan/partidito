@@ -52,11 +52,12 @@ export const canTransitionMatchStatus = (from: MatchStatus, to: MatchStatus) => 
 }
 
 export const getMatchStatusLabel = (status: MatchStatus, missingPlayers: number) => {
-  if (status === MATCH_STATUS.PLAYED) return 'Played'
-  if (status === MATCH_STATUS.NOT_PLAYED) return 'Not played'
-  if (status === MATCH_STATUS.CANCELLED) return 'Cancelled'
-  if (status === MATCH_STATUS.FULL) return 'Full'
-  return `Missing ${missingPlayers}`
+  const { t } = useI18n()
+  if (status === MATCH_STATUS.PLAYED) return t('match.status.played')
+  if (status === MATCH_STATUS.NOT_PLAYED) return t('match.status.notPlayed')
+  if (status === MATCH_STATUS.CANCELLED) return t('match.status.cancelled')
+  if (status === MATCH_STATUS.FULL) return t('match.status.full')
+  return t('match.status.missing', { count: missingPlayers })
 }
 
 export const getMatchStartDate = (date?: string, time?: string) => {

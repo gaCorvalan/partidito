@@ -32,47 +32,46 @@ const profileSeed: ProfileData = {
   avatarUrl: null
 }
 
-const statsSeed: ProfileStat[] = [
-  {
-    id: 'matches',
-    icon: 'lucide:trophy',
-    value: '12',
-    label: 'Matches played',
-    valueClass: 'text-2xl font-bold'
-  },
-  {
-    id: 'area',
-    icon: 'lucide:map-pin',
-    value: 'Downtown',
-    label: 'Area',
-    valueClass: 'text-lg font-semibold'
-  }
-]
-
-const skillsSeed: ProfileSkill[] = [
-  {
-    id: 'padel',
-    name: 'Padel',
-    level: 'intermediate',
-    progress: 66
-  },
-  {
-    id: 'football',
-    name: 'Football',
-    level: 'intermediate',
-    progress: 66
-  }
-]
-
 type ProfileRow = {
   full_name: string
   location: string | null
 }
 
 export const useProfile = () => {
+  const { t } = useI18n()
   const supabase = useSupabaseClient()
   const { user } = useAuth()
   const userId = computed(() => user.value?.id ?? null)
+  const statsSeed: ProfileStat[] = [
+    {
+      id: 'matches',
+      icon: 'lucide:trophy',
+      value: '12',
+      label: t('profile.stats.matchesPlayed'),
+      valueClass: 'text-2xl font-bold'
+    },
+    {
+      id: 'area',
+      icon: 'lucide:map-pin',
+      value: 'Centro',
+      label: t('profile.stats.area'),
+      valueClass: 'text-lg font-semibold'
+    }
+  ]
+  const skillsSeed: ProfileSkill[] = [
+    {
+      id: 'padel',
+      name: t('sport.padel'),
+      level: t('level.intermediate'),
+      progress: 66
+    },
+    {
+      id: 'football',
+      name: t('sport.football'),
+      level: t('level.intermediate'),
+      progress: 66
+    }
+  ]
 
   const profileQuery = useQuery({
     queryKey: ['profile', userId.value],
@@ -113,7 +112,7 @@ export const useProfile = () => {
     return {
       name: value.full_name,
       initials,
-      location: value.location ?? 'Sin zona',
+      location: value.location ?? t('profile.noZone'),
       avatarUrl
     }
   })

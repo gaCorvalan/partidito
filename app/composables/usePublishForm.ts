@@ -11,15 +11,17 @@ export interface PublishSelectField {
 }
 
 export const usePublishForm = () => {
+  const { t } = useI18n()
+
   const sportOptions: PublishOption[] = [
-    { label: 'Padel', value: 'padel' },
-    { label: 'Football', value: 'football' }
+    { label: t('sport.padel'), value: 'padel' },
+    { label: t('sport.football'), value: 'football' }
   ]
 
   const levelOptions: PublishOption[] = [
-    { label: 'beginner', value: 'beginner' },
-    { label: 'intermediate', value: 'intermediate' },
-    { label: 'advanced', value: 'advanced' }
+    { label: t('level.beginner'), value: 'beginner' },
+    { label: t('level.intermediate'), value: 'intermediate' },
+    { label: t('level.advanced'), value: 'advanced' }
   ]
 
   const missingPlayersOptions: PublishOption[] = [

@@ -7,6 +7,7 @@ import { useMatchDetail } from '~/composables/useMatchDetail'
 import { useChatMessaging } from '~/composables/useChatMessaging'
 
 const route = useRoute()
+const { t } = useI18n()
 const activeTab = ref<'info' | 'chat'>('info')
 
 const {
@@ -27,9 +28,9 @@ const { sendMessage, error: chatError } = useChatMessaging()
 
 const joinLabel = computed(() => {
   if (isJoined.value && !permissions.value.canLeave) {
-    return 'No puedes salir'
+    return t('match.cannotLeave')
   }
-  return isJoined.value ? 'Leave match' : 'Join match'
+  return isJoined.value ? t('match.leave') : t('match.join')
 })
 
 const removableParticipants = computed(() =>
@@ -103,7 +104,7 @@ const handleMarkAttendance = (participantUserId: string, attendanceStatus: 'atte
         <button class="p-2 hover:bg-muted rounded-lg transition-colors" type="button" @click="handleBack">
           <Icon name="lucide:chevron-left" class="w-5 h-5 text-foreground" />
         </button>
-        <h1 class="text-lg font-semibold text-foreground">Match details</h1>
+        <h1 class="text-lg font-semibold text-foreground">{{ t('match.title') }}</h1>
         <button class="p-2 hover:bg-muted rounded-lg transition-colors" type="button" @click="handleShare">
           <Icon name="lucide:share-2" class="w-5 h-5 text-foreground" />
         </button>
@@ -118,7 +119,7 @@ const handleMarkAttendance = (participantUserId: string, attendanceStatus: 'atte
           type="button"
           @click="activeTab = 'info'"
         >
-          Info
+          {{ t('match.tab.info') }}
         </button>
         <button
           class="flex-1 py-3 text-sm font-medium"
@@ -126,7 +127,7 @@ const handleMarkAttendance = (participantUserId: string, attendanceStatus: 'atte
           type="button"
           @click="activeTab = 'chat'"
         >
-          Chat
+          {{ t('match.tab.chat') }}
         </button>
       </div>
     </div>
@@ -146,7 +147,7 @@ const handleMarkAttendance = (participantUserId: string, attendanceStatus: 'atte
             </div>
             <div class="text-right">
               <p class="text-sm font-semibold text-foreground">${{ match.price }}</p>
-              <p class="text-xs text-muted-foreground">per player</p>
+              <p class="text-xs text-muted-foreground">{{ t('match.pricePerPlayer') }}</p>
             </div>
           </div>
           <div class="space-y-1.5 text-sm text-card-foreground">
@@ -176,7 +177,7 @@ const handleMarkAttendance = (participantUserId: string, attendanceStatus: 'atte
         <div class="bg-card border border-border rounded-2xl p-4 space-y-3">
           <div class="flex items-start justify-between gap-3">
             <div class="min-w-0">
-              <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Ubicacion</p>
+              <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{{ t('match.location') }}</p>
               <p class="text-sm font-semibold text-foreground truncate">
                 {{ match.clubName || match.location || 'Sin lugar definido' }}
               </p>
@@ -190,7 +191,7 @@ const handleMarkAttendance = (participantUserId: string, attendanceStatus: 'atte
               class="inline-flex items-center gap-1 rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-muted transition-colors"
             >
               <Icon name="lucide:navigation" class="w-3.5 h-3.5" />
-              <span>Abrir</span>
+              <span>{{ t('match.location.openMap') }}</span>
             </a>
           </div>
         </div>
@@ -211,22 +212,22 @@ const handleMarkAttendance = (participantUserId: string, attendanceStatus: 'atte
           >
             {{
               joinStatus.isJoining
-                ? 'Joining...'
+                ? t('match.joining')
                 : joinStatus.isLeaving
-                  ? 'Leaving...'
+                  ? t('match.leaving')
                   : joinLabel
             }}
           </button>
           <p v-if="actionError" class="text-xs text-rose-500">{{ actionError }}</p>
           <p v-if="permissions.canManageParticipation && isJoined && !permissions.canLeave" class="text-xs text-muted-foreground">
-            No puedes salir en la ultima hora. El creador no puede salir del partido.
+            {{ t('match.leaveRestriction') }}
           </p>
 
           <div
             v-if="permissions.canRemoveParticipants && removableParticipants.length"
             class="rounded-lg border border-border p-3 space-y-2"
           >
-            <p class="text-xs font-semibold text-foreground">Gestion de participantes</p>
+            <p class="text-xs font-semibold text-foreground">{{ t('match.manageParticipants') }}</p>
             <div
               v-for="participant in removableParticipants"
               :key="participant.userId"
@@ -239,17 +240,17 @@ const handleMarkAttendance = (participantUserId: string, attendanceStatus: 'atte
                 :disabled="joinStatus.isRemoving"
                 @click="handleRemoveParticipant(participant.userId)"
               >
-                {{ joinStatus.isRemoving ? 'Removiendo...' : 'Remover' }}
+                {{ joinStatus.isRemoving ? t('match.removing') : t('match.remove') }}
               </button>
             </div>
           </div>
 
           <div v-if="permissions.canConfirmResult" class="rounded-lg border border-border p-3 space-y-2">
-            <p class="text-xs font-semibold text-foreground">Confirmar estado del partido</p>
+            <p class="text-xs font-semibold text-foreground">{{ t('match.confirmStatus') }}</p>
             <input
               v-model="closeReason"
               type="text"
-              placeholder="Motivo opcional"
+              :placeholder="t('match.optionalReason')"
               class="w-full rounded-md border border-border bg-input px-3 py-2 text-xs text-foreground"
             />
             <div class="grid grid-cols-2 gap-2">
@@ -259,7 +260,7 @@ const handleMarkAttendance = (participantUserId: string, attendanceStatus: 'atte
                 :disabled="joinStatus.isClosing"
                 @click="handleConfirmPlayed"
               >
-                {{ joinStatus.isClosing ? 'Guardando...' : 'Se jugo' }}
+                {{ joinStatus.isClosing ? t('match.save') : t('match.played') }}
               </button>
               <button
                 class="py-2 rounded-lg border border-border text-xs font-semibold text-destructive hover:bg-destructive/10 transition-colors"
@@ -267,13 +268,13 @@ const handleMarkAttendance = (participantUserId: string, attendanceStatus: 'atte
                 :disabled="joinStatus.isClosing"
                 @click="handleConfirmNotPlayed"
               >
-                {{ joinStatus.isClosing ? 'Guardando...' : 'No se jugo' }}
+                {{ joinStatus.isClosing ? t('match.save') : t('match.notPlayed') }}
               </button>
             </div>
           </div>
 
           <div v-if="permissions.canMarkAttendance && participants.length" class="rounded-lg border border-border p-3 space-y-2">
-            <p class="text-xs font-semibold text-foreground">Asistencia interna</p>
+            <p class="text-xs font-semibold text-foreground">{{ t('match.attendance') }}</p>
             <div
               v-for="participant in participants"
               :key="`attendance-${participant.userId}`"
@@ -284,10 +285,10 @@ const handleMarkAttendance = (participantUserId: string, attendanceStatus: 'atte
                 <p class="text-[11px] text-muted-foreground">
                   {{
                     participant.attendanceStatus === 'attended'
-                      ? 'Asistio'
+                      ? t('match.attended')
                       : participant.attendanceStatus === 'no_show'
-                        ? 'No asistio'
-                        : 'Sin registrar'
+                        ? t('match.noShow')
+                        : t('match.notRecorded')
                   }}
                 </p>
               </div>
@@ -298,7 +299,7 @@ const handleMarkAttendance = (participantUserId: string, attendanceStatus: 'atte
                   :disabled="joinStatus.isMarkingAttendance || Boolean(participant.attendanceStatus)"
                   @click="handleMarkAttendance(participant.userId, 'attended')"
                 >
-                  Asistio
+                  {{ t('match.attended') }}
                 </button>
                 <button
                   class="px-2.5 py-1 rounded-md border border-border text-xs font-medium text-destructive hover:bg-destructive/10 transition-colors"
@@ -306,7 +307,7 @@ const handleMarkAttendance = (participantUserId: string, attendanceStatus: 'atte
                   :disabled="joinStatus.isMarkingAttendance || Boolean(participant.attendanceStatus)"
                   @click="handleMarkAttendance(participant.userId, 'no_show')"
                 >
-                  Falto
+                  {{ t('match.noShow') }}
                 </button>
               </div>
             </div>
@@ -318,10 +319,10 @@ const handleMarkAttendance = (participantUserId: string, attendanceStatus: 'atte
       <div v-else class="h-full flex flex-col">
         <div class="flex-1 overflow-y-auto p-4 space-y-3">
           <div v-if="!canViewChat" class="rounded-lg border border-border p-3 text-xs text-muted-foreground">
-            Debes estar unido al partido para participar en el chat.
+            {{ t('match.chat.mustJoin') }}
           </div>
           <div v-else-if="!canWriteChat" class="rounded-lg border border-border p-3 text-xs text-muted-foreground">
-            Chat cerrado: partido finalizado.
+            {{ t('match.chat.closed') }}
           </div>
           <div v-else-if="chatError" class="rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-600">
             {{ chatError }}

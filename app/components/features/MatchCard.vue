@@ -14,12 +14,12 @@
               : 'bg-green-100 text-green-700'
           ]"
         >
-          {{ match.isFull ? 'Full' : `${match.missingPlayers} Missing` }}
+          {{ match.isFull ? t('match.status.full') : t('match.status.missing', { count: match.missingPlayers }) }}
         </span>
       </div>
       <div class="text-right">
         <p class="text-sm font-semibold text-foreground">${{ match.price }}</p>
-        <p class="text-xs text-muted-foreground">per player</p>
+        <p class="text-xs text-muted-foreground">{{ t('match.pricePerPlayer') }}</p>
       </div>
     </div>
     <div class="space-y-1.5 text-sm text-card-foreground">
@@ -56,13 +56,15 @@
         type="button"
         @click.stop="$emit('join', match.id)"
       >
-        {{ match.isFull ? 'Full' : match.isJoined ? 'Unido' : 'Join' }}
+        {{ match.isFull ? t('match.status.full') : match.isJoined ? t('match.joined') : t('match.join') }}
       </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+const { t } = useI18n()
+
 interface Match {
   id: string
   sport: string

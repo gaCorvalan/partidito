@@ -15,9 +15,9 @@ const chatsSeed: ChatListItem[] = [
   {
     id: 'pacheco-padel',
     title: 'Pacheco Padel Center',
-    timeAgo: '2 min ago',
-    timeLabel: 'Today 19:00',
-    lastMessage: 'See you at 7pm!',
+    timeAgo: 'hace 2 min',
+    timeLabel: 'Hoy 19:00',
+    lastMessage: 'Nos vemos a las 19:00',
     participants: 3
   },
 ]
@@ -36,17 +36,23 @@ type ChatRowWithActivity = ChatRow & {
   lastActivityAt: string
 }
 
-const formatRelativeTime = (value?: string) => {
-  if (!value) return 'Just now'
+const formatRelativeTime = (value: string | undefined, t: ReturnType<typeof useI18n>["t"]) => {
+  if (!value) return t('time.justNow')
   const date = new Date(value)
   const diffMinutes = Math.floor((Date.now() - date.getTime()) / 60000)
-  if (diffMinutes < 1) return 'Just now'
-  if (diffMinutes < 60) return `${diffMinutes} min ago`
+  if (diffMinutes < 1) return t('time.justNow')
+  if (diffMinutes < 60) return t('time.minAgo', { count: diffMinutes })
   const diffHours = Math.floor(diffMinutes / 60)
-  return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`
+  if (diffHours === 1) return t('time.hourAgo')
+  return t('time.hoursAgo', { count: diffHours })
 }
 
-const formatTimeLabel = (dateValue: string, timeValue: string) => {
+const formatTimeLabel = (
+  dateValue: string,
+  timeValue: string,
+  t: ReturnType<typeof useI18n>["t"],
+  locale: "es" | "en"
+) => {
   const target = new Date(`${dateValue}T${timeValue}`)
   const now = new Date()
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
@@ -56,25 +62,29 @@ const formatTimeLabel = (dateValue: string, timeValue: string) => {
 
   const diffDays = Math.floor((targetDay.getTime() - today.getTime()) / 86400000)
 
-  if (diffDays === 0) return `Today ${timeValue}`
-  if (diffDays === 1) return `Tomorrow ${timeValue}`
+  if (diffDays === 0) return t('time.todayAt', { time: timeValue })
+  if (diffDays === 1) return t('time.tomorrowAt', { time: timeValue })
   if (diffDays > 1 && diffDays < 7) {
-    const weekday = new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(target)
-    return `This week · ${weekday} ${timeValue}`
+    const weekday = new Intl.DateTimeFormat(locale === 'en' ? 'en-US' : 'es-AR', { weekday: 'short' }).format(target)
+    return t('time.thisWeekAt', { weekday, time: timeValue })
   }
 
   return `${dateValue} ${timeValue}`
 }
 
-const mapChatRow = (row: ChatRow): ChatListItem => {
+const mapChatRow = (
+  row: ChatRow,
+  t: ReturnType<typeof useI18n>["t"],
+  locale: "es" | "en"
+): ChatListItem => {
   const lastActivityAt = row.last_message_at ?? `${row.date}T${row.time}`
 
   return {
     id: row.match_id,
     title: row.venue,
-    timeAgo: formatRelativeTime(lastActivityAt),
-    timeLabel: formatTimeLabel(row.date, row.time),
-    lastMessage: row.last_message ?? 'Sin mensajes',
+    timeAgo: formatRelativeTime(lastActivityAt, t),
+    timeLabel: formatTimeLabel(row.date, row.time, t, locale),
+    lastMessage: row.last_message ?? t('chat.noMessages'),
     participants: row.participants
   }
 }
@@ -86,6 +96,7 @@ const toTimestamp = (value: string) => {
 
 export const useChatsList = () => {
   const supabase = useSupabaseClient()
+  const { t, locale } = useI18n()
 
   const query = useQuery({
     queryKey: ['chats'],
@@ -110,7 +121,7 @@ export const useChatsList = () => {
           if (diff !== 0) return diff
           return a.match_id.localeCompare(b.match_id)
         })
-        .map(mapChatRow)
+        .map((row) => mapChatRow(row, t, locale.value))
     },
     placeholderData: chatsSeed
   })

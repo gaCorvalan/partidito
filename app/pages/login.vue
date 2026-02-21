@@ -4,6 +4,7 @@ import LoginCard from '~/components/features/LoginCard.vue'
 import { useAuth } from '~/composables/useAuth'
 
 const route = useRoute()
+const { t } = useI18n()
 const { signInWithGoogle, user } = useAuth()
 
 const returnTo = computed(() => {
@@ -29,22 +30,22 @@ watch(
 const copy = computed(() => {
   if (returnTo.value.startsWith('/create')) {
     return {
-      title: 'Inicia sesion para publicar',
-      description: 'Necesitas una cuenta para crear un partido.',
-      buttonLabel: 'Continuar con Google'
+      title: t('login.title.create'),
+      description: t('login.desc.create'),
+      buttonLabel: t('login.button.google')
     }
   }
   if (returnTo.value.startsWith('/chats')) {
     return {
-      title: 'Inicia sesion para chatear',
-      description: 'Accede a las conversaciones de tus partidos.',
-      buttonLabel: 'Continuar con Google'
+      title: t('login.title.chats'),
+      description: t('login.desc.chats'),
+      buttonLabel: t('login.button.google')
     }
   }
   return {
-    title: 'Inicia sesion para unirte',
-    description: 'Unete a partidos y coordina con el equipo.',
-    buttonLabel: 'Continuar con Google'
+    title: t('login.title.default'),
+    description: t('login.desc.default'),
+    buttonLabel: t('login.button.google')
   }
 })
 

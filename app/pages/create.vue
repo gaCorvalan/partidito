@@ -22,6 +22,7 @@ type Club = {
 }
 
 const route = useRoute()
+const { t } = useI18n()
 const { sportOptions, levelOptions, missingPlayersOptions } = usePublishForm()
 
 const sport = ref('padel')
@@ -127,7 +128,7 @@ const publishMutation = useMutation({
     }
 
     if (!selectedClub.value) {
-      throw new Error('Debes seleccionar un club para publicar el partido.')
+      throw new Error(t('create.error.clubRequired'))
     }
 
     const selectedMissingPlayers = Number(missingPlayers.value)
@@ -192,8 +193,8 @@ const handleBack = () => {
 
 const handleSubmit = () => {
   submitError.value = null
-  if (!selectedClub.value) {
-    submitError.value = 'Debes seleccionar un club para publicar el partido.'
+    if (!selectedClub.value) {
+    submitError.value = t('create.error.clubRequired')
     void openClubPicker()
     return
   }
@@ -203,20 +204,20 @@ const handleSubmit = () => {
 
 <template>
   <div class="h-full flex flex-col bg-background">
-    <PublishHeader title="Create match" @back="handleBack" />
+    <PublishHeader :title="t('create.title')" @back="handleBack" />
 
     <div class="flex-1 overflow-y-auto p-4 space-y-5 pb-28">
       <div class="bg-card border border-border rounded-2xl p-4 space-y-4">
         <div class="flex items-center gap-2">
           <Icon name="lucide:trophy" class="w-4 h-4 text-primary" />
           <div>
-            <p class="text-sm font-semibold text-foreground">Match setup</p>
-            <p class="text-xs text-muted-foreground">Define el deporte y los cupos.</p>
+            <p class="text-sm font-semibold text-foreground">{{ t('create.section.setup') }}</p>
+            <p class="text-xs text-muted-foreground">{{ t('create.setup.subtitle') }}</p>
           </div>
         </div>
-        <PublishSelectField label="Sport" :options="sportOptions" v-model="sport" />
+        <PublishSelectField :label="t('create.field.sport')" :options="sportOptions" v-model="sport" />
         <PublishOptionGroup
-          label="Missing Players"
+          :label="t('create.field.missingPlayers')"
           :options="missingPlayersOptions"
           v-model="missingPlayers"
         />
@@ -226,13 +227,13 @@ const handleSubmit = () => {
         <div class="flex items-center gap-2">
           <Icon name="lucide:calendar" class="w-4 h-4 text-primary" />
           <div>
-            <p class="text-sm font-semibold text-foreground">Schedule</p>
-            <p class="text-xs text-muted-foreground">Elige fecha y hora.</p>
+            <p class="text-sm font-semibold text-foreground">{{ t('create.section.schedule') }}</p>
+            <p class="text-xs text-muted-foreground">{{ t('create.schedule.subtitle') }}</p>
           </div>
         </div>
         <div class="grid gap-3 sm:grid-cols-2">
-          <PublishInputField label="Date" type="date" v-model="date" />
-          <PublishInputField label="Time" type="time" v-model="time" />
+          <PublishInputField :label="t('create.field.date')" type="date" v-model="date" />
+          <PublishInputField :label="t('create.field.time')" type="time" v-model="time" />
         </div>
       </div>
 
@@ -240,8 +241,8 @@ const handleSubmit = () => {
         <div class="flex items-center gap-2">
           <Icon name="lucide:map-pin" class="w-4 h-4 text-primary" />
           <div>
-            <p class="text-sm font-semibold text-foreground">Club</p>
-            <p class="text-xs text-muted-foreground">Seleccion obligatoria para publicar.</p>
+            <p class="text-sm font-semibold text-foreground">{{ t('create.section.club') }}</p>
+            <p class="text-xs text-muted-foreground">{{ t('create.club.subtitle') }}</p>
           </div>
         </div>
         <button
@@ -253,7 +254,7 @@ const handleSubmit = () => {
             <Icon name="lucide:search" class="w-4 h-4 text-muted-foreground" />
             <div class="min-w-0 flex-1">
               <p v-if="selectedClub" class="text-sm font-medium text-foreground truncate">{{ selectedClub.name }}</p>
-              <p v-else class="text-sm text-muted-foreground">Buscar y seleccionar club</p>
+              <p v-else class="text-sm text-muted-foreground">{{ t('create.club.searchOrSelect') }}</p>
               <p v-if="selectedClub" class="text-xs text-muted-foreground truncate">{{ selectedClubLabel }}</p>
             </div>
             <Icon name="lucide:chevron-right" class="w-4 h-4 text-muted-foreground" />
@@ -265,25 +266,25 @@ const handleSubmit = () => {
         <div class="flex items-center gap-2">
           <Icon name="lucide:signal" class="w-4 h-4 text-primary" />
           <div>
-            <p class="text-sm font-semibold text-foreground">Level & price</p>
-            <p class="text-xs text-muted-foreground">Define el nivel y el costo.</p>
+            <p class="text-sm font-semibold text-foreground">{{ t('create.section.levelPrice') }}</p>
+            <p class="text-xs text-muted-foreground">{{ t('create.levelPrice.subtitle') }}</p>
           </div>
         </div>
-        <PublishLevelGroup label="Level" :options="levelOptions" v-model="level" />
-        <PublishInputField label="Price per Player (ARS)" type="number" v-model="price" />
+        <PublishLevelGroup :label="t('create.field.level')" :options="levelOptions" v-model="level" />
+        <PublishInputField :label="t('create.field.price')" type="number" v-model="price" />
       </div>
 
       <div class="bg-card border border-border rounded-2xl p-4 space-y-4">
         <div class="flex items-center gap-2">
           <Icon name="lucide:sticky-note" class="w-4 h-4 text-primary" />
           <div>
-            <p class="text-sm font-semibold text-foreground">Notes</p>
-            <p class="text-xs text-muted-foreground">Detalles opcionales para los jugadores.</p>
+            <p class="text-sm font-semibold text-foreground">{{ t('create.section.notes') }}</p>
+            <p class="text-xs text-muted-foreground">{{ t('create.notes.subtitle') }}</p>
           </div>
         </div>
         <PublishInputField
-          label="Note (optional)"
-          placeholder="Add any details about the match..."
+          :label="t('create.field.note')"
+          :placeholder="t('create.field.notePlaceholder')"
           as="textarea"
           :rows="3"
           v-model="note"
@@ -293,8 +294,8 @@ const handleSubmit = () => {
       <div class="bg-card border border-border rounded-2xl p-4">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm font-semibold text-foreground">Unirme automaticamente</p>
-            <p class="text-xs text-muted-foreground">El creador se suma al partido.</p>
+            <p class="text-sm font-semibold text-foreground">{{ t('create.autoJoin.title') }}</p>
+            <p class="text-xs text-muted-foreground">{{ t('create.autoJoin.subtitle') }}</p>
           </div>
           <button
             class="w-11 h-6 rounded-full transition-colors"
@@ -313,7 +314,7 @@ const handleSubmit = () => {
       <p v-if="submitError" class="text-xs text-rose-500">{{ submitError }}</p>
     </div>
 
-    <PublishSubmitBar label="Publish match" @submit="handleSubmit" />
+    <PublishSubmitBar :label="t('create.submit')" @submit="handleSubmit" />
 
     <Transition
       enter-active-class="transition duration-300 ease-out"
@@ -330,14 +331,14 @@ const handleSubmit = () => {
             <button class="p-2 hover:bg-muted rounded-lg transition-colors" type="button" @click="closeClubPicker">
               <Icon name="lucide:chevron-left" class="w-5 h-5 text-foreground" />
             </button>
-            <h2 class="text-base font-semibold text-foreground">Elegir club</h2>
+            <h2 class="text-base font-semibold text-foreground">{{ t('create.club.pickerTitle') }}</h2>
             <button
               class="text-sm font-semibold text-primary disabled:text-muted-foreground"
               type="button"
               :disabled="!draftSelectedClubId"
               @click="confirmClubSelection"
             >
-              Confirmar
+              {{ t('common.confirm') }}
             </button>
           </div>
 
@@ -350,7 +351,7 @@ const handleSubmit = () => {
               <input
                 v-model="clubSearch"
                 type="search"
-                placeholder="Buscar por nombre o zona"
+                :placeholder="t('create.club.searchPlaceholder')"
                 class="w-full rounded-xl border border-border bg-input pl-9 pr-3 py-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/30"
                 :autofocus="isClubPickerOpen"
               />
@@ -364,11 +365,11 @@ const handleSubmit = () => {
           </div>
 
           <div v-else-if="clubsQuery.error.value" class="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-600">
-            No pudimos cargar los clubes. Intenta de nuevo.
+            {{ t('create.club.loadError') }}
           </div>
 
           <div v-else-if="!filteredClubs.length" class="rounded-xl border border-border p-4 text-sm text-muted-foreground">
-            No encontramos clubes con esa busqueda.
+            {{ t('create.club.searchEmpty') }}
           </div>
 
           <button

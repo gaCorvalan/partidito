@@ -9,6 +9,7 @@ import { useMatchDetail } from '~/composables/useMatchDetail'
 import { useChatMessaging } from '~/composables/useChatMessaging'
 
 const route = useRoute()
+const { t } = useI18n()
 const matchId = String(route.params.id)
 const { title, messages } = useChatThread(matchId)
 const { isJoined, permissions } = useMatchDetail(matchId)
@@ -38,15 +39,15 @@ const handleSend = async (message: string) => {
           <Icon name="lucide:messages-square" class="w-6 h-6" />
         </div>
         <div class="space-y-1">
-          <p class="text-sm font-semibold text-foreground">Inicia sesion para chatear</p>
-          <p class="text-xs text-muted-foreground">Necesitas una cuenta para participar.</p>
+          <p class="text-sm font-semibold text-foreground">{{ t('chat.signIn.title') }}</p>
+          <p class="text-xs text-muted-foreground">{{ t('chat.signIn.desc') }}</p>
         </div>
         <button
           class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg border border-border hover:bg-muted transition-colors"
           type="button"
           @click="navigateTo(`/login?returnTo=${encodeURIComponent(route.fullPath)}`)"
         >
-          Iniciar sesion
+          {{ t('chats.signIn.cta') }}
         </button>
       </div>
       <div
@@ -57,9 +58,9 @@ const handleSend = async (message: string) => {
           <Icon name="lucide:lock" class="w-6 h-6" />
         </div>
         <div class="space-y-1">
-          <p class="text-sm font-semibold text-foreground">No tienes acceso al chat</p>
+          <p class="text-sm font-semibold text-foreground">{{ t('chat.noAccess.title') }}</p>
           <p class="text-xs text-muted-foreground">
-            Debes estar unido al partido para participar.
+            {{ t('chat.noAccess.desc') }}
           </p>
         </div>
       </div>
@@ -71,9 +72,9 @@ const handleSend = async (message: string) => {
           <Icon name="lucide:lock" class="w-6 h-6" />
         </div>
         <div class="space-y-1">
-          <p class="text-sm font-semibold text-foreground">Chat cerrado</p>
+          <p class="text-sm font-semibold text-foreground">{{ t('chat.closed.title') }}</p>
           <p class="text-xs text-muted-foreground">
-            El partido ya finalizo. Puedes leer el historial, pero no enviar mensajes.
+            {{ t('chat.closed.desc') }}
           </p>
         </div>
       </div>
@@ -82,9 +83,9 @@ const handleSend = async (message: string) => {
           <Icon name="lucide:messages-square" class="w-6 h-6" />
         </div>
         <div class="space-y-1">
-          <p class="text-sm font-semibold text-foreground">Aun no hay mensajes</p>
+          <p class="text-sm font-semibold text-foreground">{{ t('chat.empty.title') }}</p>
           <p class="text-xs text-muted-foreground">
-            Inicia la conversacion y organiza el partido.
+            {{ t('chat.empty.desc') }}
           </p>
         </div>
       </div>

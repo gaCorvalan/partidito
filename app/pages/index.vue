@@ -7,10 +7,11 @@ import { useGeoLocation } from '~/composables/useGeoLocation'
 import { useAuth } from '~/composables/useAuth'
 import { useMatchParticipation } from '~/composables/useMatchParticipation'
 import { hasMatchStarted, isDiscoverableMatch, isJoinableMatchStatus } from '~/composables/useMatchState'
+const { t } = useI18n()
 const filters = [
-    { label: "All", value: "all" },
-    { label: "Padel", value: "padel" },
-    { label: "Football", value: "football" },
+    { label: t("home.filter.all"), value: "all" },
+    { label: t("home.filter.padel"), value: "padel" },
+    { label: t("home.filter.football"), value: "football" },
 ];
 
 const activeFilter = ref("all");
@@ -38,7 +39,7 @@ const isAuthenticated = computed(() => Boolean(user.value))
 const { joinMatch } = useMatchParticipation()
 
 const locationLabel = computed(() => {
-    if (!location.value) return 'Ubicacion no activada'
+    if (!location.value) return t('home.location.disabled')
     return location.value.placeName || `${location.value.lat.toFixed(3)}, ${location.value.lng.toFixed(3)}`
 })
 
@@ -162,9 +163,9 @@ const handleFilterChange = (filter: string) => {
     <div class="px-4 pt-4">
         <div class="bg-card border border-border rounded-xl p-3 flex items-center justify-between gap-3">
             <div>
-                <p class="text-sm font-semibold text-foreground">Ubicacion</p>
+                <p class="text-sm font-semibold text-foreground">{{ t('profile.location') }}</p>
                 <p class="text-xs text-muted-foreground">{{ locationLabel }}</p>
-                <p v-if="status === 'denied'" class="text-xs text-rose-500">Permiso denegado</p>
+                <p v-if="status === 'denied'" class="text-xs text-rose-500">{{ t('home.location.permissionDenied') }}</p>
                 <p v-else-if="error" class="text-xs text-rose-500">{{ error }}</p>
             </div>
             <div class="flex items-center gap-2">
@@ -174,7 +175,13 @@ const handleFilterChange = (filter: string) => {
                     :disabled="status === 'loading'"
                     @click="requestLocation"
                 >
-                    {{ status === 'loading' ? 'Detectando...' : location ? 'Actualizar' : 'Usar mi ubicacion' }}
+                    {{
+                      status === 'loading'
+                        ? t('home.location.detecting')
+                        : location
+                          ? t('home.location.update')
+                          : t('home.location.useMine')
+                    }}
                 </button>
                 <button
                     v-if="location"
@@ -182,7 +189,7 @@ const handleFilterChange = (filter: string) => {
                     type="button"
                     @click="clearLocation"
                 >
-                    Quitar
+                    {{ t('home.location.remove') }}
                 </button>
             </div>
         </div>
@@ -194,7 +201,7 @@ const handleFilterChange = (filter: string) => {
                 type="button"
                 @click="upcomingExpanded = !upcomingExpanded"
             >
-                <span class="text-sm font-semibold text-foreground">Proximos partidos</span>
+                <span class="text-sm font-semibold text-foreground">{{ t('home.upcoming') }}</span>
                 <Icon
                     :name="upcomingExpanded ? 'lucide:chevron-up' : 'lucide:chevron-down'"
                     class="w-4 h-4 text-muted-foreground"
@@ -219,7 +226,7 @@ const handleFilterChange = (filter: string) => {
             @join="joinMatch(match.id, route.fullPath)"
         />
         <div v-if="!feedMatches.length && !upcomingMatches.length" class="text-center text-sm text-muted-foreground py-8">
-            No hay partidos disponibles por ahora.
+            {{ t('home.empty') }}
         </div>
     </div>
 </template>

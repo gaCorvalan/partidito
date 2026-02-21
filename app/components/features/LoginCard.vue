@@ -1,9 +1,9 @@
 <template>
   <div class="bg-card border border-border rounded-2xl p-4 space-y-4">
     <div class="space-y-1">
-      <h1 class="text-2xl font-bold text-foreground">{{ title }}</h1>
+      <h1 class="text-2xl font-bold text-foreground">{{ resolvedTitle }}</h1>
       <p class="text-sm text-muted-foreground">
-        {{ description }}
+        {{ resolvedDescription }}
       </p>
     </div>
 
@@ -12,28 +12,27 @@
       type="button"
       @click="$emit('google')"
     >
-      {{ buttonLabel }}
+      {{ resolvedButtonLabel }}
     </button>
 
     <p class="text-xs text-muted-foreground text-center">
-      Al continuar aceptas nuestros terminos y politica de privacidad.
+      {{ t('login.terms') }}
     </p>
   </div>
 </template>
 
 <script setup lang="ts">
-withDefaults(
-  defineProps<{
-    title?: string
-    description?: string
-    buttonLabel?: string
-  }>(),
-  {
-    title: 'Iniciar sesion',
-    description: 'Entra para unirte a partidos y chatear con tu equipo.',
-    buttonLabel: 'Continuar con Google'
-  }
-)
+const { t } = useI18n()
+
+const props = defineProps<{
+  title?: string
+  description?: string
+  buttonLabel?: string
+}>()
+
+const resolvedTitle = computed(() => props.title ?? t('login.card.defaultTitle'))
+const resolvedDescription = computed(() => props.description ?? t('login.card.defaultDesc'))
+const resolvedButtonLabel = computed(() => props.buttonLabel ?? t('login.button.google'))
 
 defineEmits<{
   google: []

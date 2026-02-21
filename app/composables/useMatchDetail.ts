@@ -47,6 +47,7 @@ export interface MatchDetail {
 }
 
 export const useMatchDetail = (id: string) => {
+  const { t } = useI18n()
   const supabase = useSupabaseClient()
   const fallbackSeed = (matchesSeed.find((item) => item.id === id) as MatchDetail) ?? (matchesSeed[0] as MatchDetail)
   const fallbackMatch: MatchDetail = {
@@ -96,7 +97,7 @@ export const useMatchDetail = (id: string) => {
           status: participant.status ?? 'joined',
           attendanceStatus: participant.attendance_status ?? null,
           isCurrentUser: participant.user_id === userId.value,
-          label: participant.user_id === userId.value ? 'Tu' : `Jugador ${participant.user_id.slice(0, 6)}`
+          label: participant.user_id === userId.value ? t('chat.you') : `Jugador ${participant.user_id.slice(0, 6)}`
         }))
 
       const clubRow = data.clubs as
@@ -213,13 +214,13 @@ export const useMatchDetail = (id: string) => {
   const toggleJoin = async () => {
     clearActionError()
     if (isHistoricalOrClosed.value) {
-      actionError.value = 'Este partido ya es historico o cerrado. No puedes modificar tu participacion.'
+      actionError.value = t('match.error.historicalClosed')
       return
     }
     if (!isJoinableMatchStatus(match.value.status)) return
     if (isJoined.value) {
       if (!permissions.value.canLeave) {
-        actionError.value = 'No puedes salir en la ultima hora o si eres el creador.'
+        actionError.value = t('match.error.leaveDenied')
         return
       }
       try {
@@ -240,7 +241,7 @@ export const useMatchDetail = (id: string) => {
   const removeParticipant = async (participantUserId: string) => {
     clearActionError()
     if (!permissions.value.canRemoveParticipants) {
-      actionError.value = 'No tienes permiso para remover participantes en este momento.'
+      actionError.value = t('match.error.removeDenied')
       return
     }
     try {
@@ -253,11 +254,11 @@ export const useMatchDetail = (id: string) => {
   const confirmMatchResult = async (status: 'played' | 'not_played', reason?: string) => {
     clearActionError()
     if (isFinalStatus.value) {
-      actionError.value = 'El partido ya tiene estado final y no puede confirmarse de nuevo.'
+      actionError.value = t('match.error.finalAlreadySet')
       return
     }
     if (!permissions.value.canConfirmResult) {
-      actionError.value = 'Solo el creador puede confirmar el estado final.'
+      actionError.value = t('match.error.onlyHostConfirm')
       return
     }
     try {
@@ -270,12 +271,12 @@ export const useMatchDetail = (id: string) => {
   const markAttendance = async (participantUserId: string, attendanceStatus: 'attended' | 'no_show') => {
     clearActionError()
     if (!permissions.value.canMarkAttendance) {
-      actionError.value = 'Solo el creador puede marcar asistencia en partidos cerrados.'
+      actionError.value = t('match.error.onlyHostAttendance')
       return
     }
     const participant = participants.value.find((item) => item.userId === participantUserId)
     if (participant?.attendanceStatus) {
-      actionError.value = 'La asistencia ya fue registrada y no puede editarse.'
+      actionError.value = t('match.error.attendanceLocked')
       return
     }
     try {

@@ -22,21 +22,17 @@ type MessageRow = {
   profiles?: { full_name: string } | null
 }
 
-const messagesSeed: Array<ChatMessage & { matchId: string }> = [
-  {
-    id: 'system-1',
-    matchId: 'pacheco-padel',
-    type: 'system',
-    text: 'Juan joined the match'
-  },
-]
-
-const formatTime = (value: string) => {
+const formatTime = (value: string, locale: 'es' | 'en') => {
   const date = new Date(value)
-  return new Intl.DateTimeFormat('es-AR', { hour: '2-digit', minute: '2-digit' }).format(date)
+  return new Intl.DateTimeFormat(locale === 'en' ? 'en-US' : 'es-AR', { hour: '2-digit', minute: '2-digit' }).format(date)
 }
 
-const mapMessageRow = (row: MessageRow, currentUserId?: string | null): ChatMessage => {
+const mapMessageRow = (
+  row: MessageRow,
+  currentUserId: string | null | undefined,
+  locale: 'es' | 'en',
+  t: ReturnType<typeof useI18n>['t']
+): ChatMessage => {
   if (row.type === 'system') {
     return {
       id: row.id,
@@ -45,23 +41,32 @@ const mapMessageRow = (row: MessageRow, currentUserId?: string | null): ChatMess
     }
   }
 
-  const author = row.profiles?.full_name ?? 'Usuario'
+  const author = row.profiles?.full_name ?? t('chat.user')
   const type = row.user_id && currentUserId && row.user_id === currentUserId ? 'outgoing' : 'incoming'
 
   return {
     id: row.id,
     type,
-    author: type === 'outgoing' ? 'You' : author,
+    author: type === 'outgoing' ? t('chat.you') : author,
     text: row.content,
-    time: formatTime(row.created_at)
+    time: formatTime(row.created_at, locale)
   }
 }
 
 export const useChatThread = (matchId: string) => {
   const supabase = useSupabaseClient()
+  const { t, locale } = useI18n()
   const { user } = useAuth()
   const userId = computed(() => user.value?.id ?? null)
-  const title = 'Match Chat'
+  const title = t('chat.title')
+  const messagesSeed: Array<ChatMessage & { matchId: string }> = [
+    {
+      id: 'system-1',
+      matchId: 'pacheco-padel',
+      type: 'system',
+      text: t('chat.system.joined')
+    },
+  ]
 
   const seed = messagesSeed.filter((message) => message.matchId === matchId)
 
@@ -78,7 +83,7 @@ export const useChatThread = (matchId: string) => {
         throw error
       }
 
-      return (data as MessageRow[]).map((row) => mapMessageRow(row, userId.value))
+      return (data as MessageRow[]).map((row) => mapMessageRow(row, userId.value, locale.value, t))
     },
     placeholderData: seed
   })

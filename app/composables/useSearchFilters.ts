@@ -11,45 +11,47 @@ export type FilterGroup = {
 }
 
 export const useSearchFilters = () => {
+  const { t } = useI18n()
+
   const groups: FilterGroup[] = [
     {
       id: 'sport',
-      label: 'Sport',
+      label: t('search.group.sport'),
       selected: 'all',
       options: [
-        { label: 'All', value: 'all' },
-        { label: 'Padel', value: 'padel' },
-        { label: 'Football', value: 'football' }
+        { label: t('filters.all'), value: 'all' },
+        { label: t('sport.padel'), value: 'padel' },
+        { label: t('sport.football'), value: 'football' }
       ]
     },
     {
       id: 'date',
-      label: 'Date',
+      label: t('search.group.date'),
       selected: 'all',
       options: [
-        { label: 'All', value: 'all' },
-        { label: 'Today', value: 'today' },
-        { label: 'Tomorrow', value: 'tomorrow' },
-        { label: 'Week', value: 'week' }
+        { label: t('filters.all'), value: 'all' },
+        { label: t('filters.today'), value: 'today' },
+        { label: t('filters.tomorrow'), value: 'tomorrow' },
+        { label: t('filters.week'), value: 'week' }
       ]
     },
     {
       id: 'time',
-      label: 'Time',
+      label: t('search.group.time'),
       selected: 'all',
       options: [
-        { label: 'All', value: 'all' },
-        { label: 'Morning', value: 'morning' },
-        { label: 'Afternoon', value: 'afternoon' },
-        { label: 'Evening', value: 'evening' }
+        { label: t('filters.all'), value: 'all' },
+        { label: t('filters.morning'), value: 'morning' },
+        { label: t('filters.afternoon'), value: 'afternoon' },
+        { label: t('filters.evening'), value: 'evening' }
       ]
     },
     {
       id: 'distance',
-      label: 'Max Distance',
+      label: t('filters.maxDistance'),
       selected: '3',
       options: [
-        { label: 'All', value: 'all' },
+        { label: t('filters.all'), value: 'all' },
         { label: '1 km', value: '1' },
         { label: '3 km', value: '3' },
         { label: '5 km', value: '5' },
@@ -58,13 +60,13 @@ export const useSearchFilters = () => {
     },
     {
       id: 'level',
-      label: 'Level',
+      label: t('search.group.level'),
       selected: 'all',
       options: [
-        { label: 'All', value: 'all' },
-        { label: 'Beginner', value: 'beginner' },
-        { label: 'Intermediate', value: 'intermediate' },
-        { label: 'Advanced', value: 'advanced' }
+        { label: t('filters.all'), value: 'all' },
+        { label: t('level.beginner'), value: 'beginner' },
+        { label: t('level.intermediate'), value: 'intermediate' },
+        { label: t('level.advanced'), value: 'advanced' }
       ]
     }
   ]

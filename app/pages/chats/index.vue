@@ -5,6 +5,7 @@ import ChatListItem from '~/components/features/ChatListItem.vue'
 import { useChatsList } from '~/composables/useChatsList'
 import { useAuth } from '~/composables/useAuth'
 
+const { t } = useI18n()
 const { chats } = useChatsList()
 const { user } = useAuth()
 const isAuthenticated = computed(() => Boolean(user.value))
@@ -16,7 +17,7 @@ const handleOpen = (id: string) => {
 
 <template>
   <div class="h-full flex flex-col">
-    <ChatsHeader title="Chats" />
+    <ChatsHeader :title="t('chats.title')" />
 
     <div class="flex-1 overflow-y-auto">
       <div v-if="!isAuthenticated" class="p-6 text-center space-y-3">
@@ -24,9 +25,9 @@ const handleOpen = (id: string) => {
           <Icon name="lucide:message-square" class="w-6 h-6" />
         </div>
         <div class="space-y-1">
-          <p class="text-sm font-semibold text-foreground">Inicia sesion para ver tus chats</p>
+          <p class="text-sm font-semibold text-foreground">{{ t('chats.signIn.title') }}</p>
           <p class="text-xs text-muted-foreground">
-            Necesitas una cuenta para acceder a las conversaciones.
+            {{ t('chats.signIn.desc') }}
           </p>
         </div>
         <button
@@ -34,7 +35,7 @@ const handleOpen = (id: string) => {
           type="button"
           @click="navigateTo(`/login?returnTo=${encodeURIComponent('/chats')}`)"
         >
-          Iniciar sesion
+          {{ t('chats.signIn.cta') }}
         </button>
       </div>
       <div v-else-if="!chats.length" class="p-6 text-center space-y-3">
@@ -42,9 +43,9 @@ const handleOpen = (id: string) => {
           <Icon name="lucide:message-square" class="w-6 h-6" />
         </div>
         <div class="space-y-1">
-          <p class="text-sm font-semibold text-foreground">Aun no tienes conversaciones</p>
+          <p class="text-sm font-semibold text-foreground">{{ t('chats.empty.title') }}</p>
           <p class="text-xs text-muted-foreground">
-            Cuando te unas a un partido, el chat aparecera aqui.
+            {{ t('chats.empty.desc') }}
           </p>
         </div>
         <button
@@ -52,7 +53,7 @@ const handleOpen = (id: string) => {
           type="button"
           @click="navigateTo('/')"
         >
-          Explorar partidos
+          {{ t('chats.empty.cta') }}
         </button>
       </div>
       <div v-else class="space-y-0">

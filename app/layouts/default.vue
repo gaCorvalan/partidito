@@ -22,7 +22,7 @@
                         ]"
                     >
                         <Icon :name="item.icon" class="w-6 h-6" />
-                        <span class="text-xs font-medium">{{ item.label }}</span>
+                        <span class="text-xs font-medium">{{ t(item.label) }}</span>
                     </button>
                 </div>
             </nav>
@@ -31,21 +31,24 @@
 </template>
 
 <script setup lang="ts">
+import type { TranslationKey } from "~/i18n/locales/es";
+
 interface NavItem {
-    label: string;
+    label: TranslationKey;
     route: string;
     icon: string;
 }
 
 const navItems: NavItem[] = [
-    { label: "Home", route: "/", icon: "lucide:home" },
-    { label: "Search", route: "/search", icon: "lucide:search" },
-    { label: "Publish", route: "/create", icon: "lucide:plus" },
-    { label: "Chats", route: "/chats", icon: "lucide:message-square" },
-    { label: "Profile", route: "/profile", icon: "lucide:user" },
+    { label: "nav.home", route: "/", icon: "lucide:home" },
+    { label: "nav.search", route: "/search", icon: "lucide:search" },
+    { label: "nav.publish", route: "/create", icon: "lucide:plus" },
+    { label: "nav.chats", route: "/chats", icon: "lucide:message-square" },
+    { label: "nav.profile", route: "/profile", icon: "lucide:user" },
 ];
 
 const route = useRoute();
+const { t } = useI18n();
 
 const isActive = (path: string) => {
     return route.path === path;
